@@ -1,0 +1,89 @@
+.driver-app {
+  box-sizing: border-box;
+  max-width: 420px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding-bottom: 66px;
+  background: #f7f8f1;
+  color: #263126;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.driver-app *,
+.driver-app *::before,
+.driver-app *::after {
+  box-sizing: border-box;
+}
+
+.driver-app__header {
+  min-height: 54px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  padding: 8px 16px;
+  border-bottom: 1px solid #e4e9dc;
+  background: #fff;
+}
+
+.driver-app__header strong {
+  color: #1f3d12;
+  font-size: 13px;
+}
+
+.driver-app__header span {
+  color: #788273;
+  font-size: 9px;
+}
+
+.driver-app__placeholder {
+  margin: 14px 12px;
+  padding: 16px;
+  border: 1px solid #e4e9dc;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.driver-app__placeholder h2 {
+  margin: 0 0 7px;
+  color: #244b19;
+  font-size: 13px;
+}
+
+.driver-app__placeholder p {
+  margin: 0;
+  color: #788273;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.driver-app__nav {
+  position: fixed;
+  z-index: 20;
+  bottom: 0;
+  left: 50%;
+  width: min(420px, 100%);
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding-bottom: env(safe-area-inset-bottom);
+  transform: translateX(-50%);
+  border-top: 1px solid #e4e9dc;
+  background: #fff;
+}
+
+.driver-app__nav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: #879082;
+  font-size: 8px;
+  text-decoration: none;
+}
+
+.driver-app__nav a.is-active {
+  color: #4f8a1c;
+  font-weight: 700;
+}

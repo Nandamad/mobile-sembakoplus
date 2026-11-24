@@ -1,0 +1,257 @@
+.payments {
+  --green: #4f8a1c;
+  --green-dark: #244b19;
+  --muted: #788273;
+  --border: #e2e8de;
+  box-sizing: border-box;
+  max-width: 420px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding-bottom: 65px;
+  background: #f7f8f9;
+  color: #263126;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.payments *,
+.payments *::before,
+.payments *::after {
+  box-sizing: border-box;
+}
+
+.payments__header {
+  height: 33px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+}
+
+.payments__header button {
+  width: 19px;
+  height: 19px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: #f7f9f5;
+  color: var(--green-dark);
+  cursor: pointer;
+}
+
+.payments__header h1 {
+  margin: 0;
+  color: #273328;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.payments__content {
+  padding: 8px 10px 0;
+}
+
+.payments__notice {
+  padding: 7px 8px;
+  border: 1px solid #dce8d3;
+  border-radius: 8px;
+  background: #edf5e8;
+}
+
+.payments__notice strong {
+  display: block;
+  margin-bottom: 3px;
+  color: #42682d;
+  font-size: 7px;
+  font-weight: 700;
+}
+
+.payments__notice p {
+  margin: 0;
+  color: #6e7c68;
+  font-size: 6px;
+  line-height: 1.4;
+}
+
+.payments__section-title {
+  margin: 10px 0 5px;
+  color: #73806d;
+  font-size: 6px;
+  font-weight: 700;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+}
+
+.payments__method {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding: 9px 8px 7px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #fff;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.payments__method.is-selected {
+  border-color: var(--green);
+  box-shadow: 0 0 0 1px rgb(79 138 28 / 8%);
+}
+
+.payments__method-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.payments__method-icon {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: #f5f8f2;
+  color: #536a45;
+}
+
+.payments__method-icon--qris {
+  color: var(--green);
+}
+
+.payments__method-name {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.payments__method-name strong {
+  color: #34402f;
+  font-size: 7px;
+  font-weight: 700;
+}
+
+.payments__method-name small {
+  color: var(--muted);
+  font-size: 5.7px;
+}
+
+.payments__radio {
+  width: 11px;
+  height: 11px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid #cbd4c4;
+  border-radius: 50%;
+}
+
+.payments__method.is-selected .payments__radio {
+  border: 2px solid var(--green);
+}
+
+.payments__radio > span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+}
+
+.payments__description {
+  display: block;
+  color: #65705f;
+  font-size: 5.8px;
+  line-height: 1.4;
+}
+
+.payments__wallets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.payments__wallets span {
+  padding: 2px 4px;
+  border: 1px solid #e6ebe2;
+  border-radius: 4px;
+  background: #f8faf7;
+  color: #626e5e;
+  font-size: 5px;
+  line-height: 1.2;
+}
+
+.payments__selected-label {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--green);
+  font-size: 5.7px;
+  font-weight: 600;
+}
+
+.payments__method--cod {
+  gap: 5px;
+}
+
+.payments__wallets--cod span {
+  background: #f5f8f2;
+}
+
+.payments__availability {
+  display: block;
+  color: #718067;
+  font-size: 5.5px;
+}
+
+.payments__security-note {
+  margin: 5px 0 0;
+  padding: 7px 8px;
+  border: 1px solid #e4e9e1;
+  border-radius: 7px;
+  background: #f0f3ef;
+  color: #768071;
+  font-size: 5.5px;
+  line-height: 1.4;
+}
+
+.payments__confirmation {
+  margin: 6px 0;
+  color: var(--green);
+  font-size: 7px;
+  line-height: 1.4;
+}
+
+.payments__footer {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  width: min(420px, 100%);
+  padding: 8px 10px;
+  transform: translateX(-50%);
+  background: #fff;
+}
+
+.payments__footer button {
+  width: 100%;
+  height: 31px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--green);
+  color: #fff;
+  font: inherit;
+  font-size: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}

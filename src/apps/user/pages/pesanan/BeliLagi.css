@@ -1,0 +1,367 @@
+.reorder {
+  --green: #4f8a1c;
+  --green-dark: #1f3d12;
+  --muted: #8a9287;
+  --border: #e4e9dc;
+  box-sizing: border-box;
+  max-width: 420px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding-bottom: 82px;
+  background: #f7f8f1;
+  color: #263126;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.reorder *,
+.reorder *::before,
+.reorder *::after {
+  box-sizing: border-box;
+}
+
+.reorder__header {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+}
+
+.reorder__header button {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--green-dark);
+  cursor: pointer;
+}
+
+.reorder__header h1 {
+  margin: 0;
+  color: #263126;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.reorder__panel {
+  margin: 8px 12px 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: #fff;
+}
+
+.reorder__address {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 60px;
+}
+
+.reorder__address-icon {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  background: #edf5e6;
+  color: var(--green);
+}
+
+.reorder__address-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.reorder__address-title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.reorder__address-title strong {
+  font-size: 11px;
+}
+
+.reorder__address-title span {
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: #eaf3df;
+  color: var(--green);
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.reorder__address-copy p {
+  overflow: hidden;
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reorder__change {
+  padding: 5px 8px;
+  border: 1px solid #dfe8d6;
+  border-radius: 7px;
+  background: #fff;
+  color: var(--green);
+  font: inherit;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.reorder__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.reorder__section-head h2,
+.reorder__bill h2 {
+  margin: 0;
+  color: #263126;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.reorder__section-head > span {
+  color: var(--green);
+  font-size: 9px;
+}
+
+.reorder__product {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-top: 1px solid #f0f2ed;
+}
+
+.reorder__product-image {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 6px;
+  background: #f1f5ea;
+  font-size: 23px;
+}
+
+.reorder__product-copy {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.reorder__product-copy strong {
+  overflow: hidden;
+  color: #263126;
+  font-size: 10px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reorder__product-copy small,
+.reorder__product-price s {
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.reorder__product-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.reorder__product-price strong {
+  color: var(--green);
+  font-size: 10px;
+}
+
+.reorder__free {
+  padding: 3px 7px;
+  border-radius: 9px;
+  background: #edf5e6;
+  font-size: 8px !important;
+  font-weight: 600;
+}
+
+.reorder__slots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.reorder__slots button {
+  min-width: 0;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: #9aa195;
+  text-align: left;
+  cursor: pointer;
+}
+
+.reorder__slots button.is-selected {
+  border-color: var(--green);
+  background: #f4f9ef;
+  color: var(--green);
+}
+
+.reorder__slots button span {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.reorder__slots strong {
+  color: #34432d;
+  font-size: 9px;
+}
+
+.reorder__slots small {
+  font-size: 8px;
+  white-space: nowrap;
+}
+
+.reorder__delivery-note {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.reorder__payment {
+  width: calc(100% - 24px);
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #263126;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.reorder__payment strong {
+  font-size: 10px;
+}
+
+.reorder__payment span {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--green);
+  font-size: 9px;
+}
+
+.reorder__bill h2 {
+  margin-bottom: 12px;
+}
+
+.reorder__bill > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 9px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.reorder__bill > div strong {
+  color: #364033;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.reorder__bill > div .is-discount {
+  color: var(--green);
+}
+
+.reorder__bill > div strong b {
+  color: var(--green);
+  font-size: 9px;
+}
+
+.reorder__bill-total {
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  color: #263126 !important;
+  font-weight: 700;
+}
+
+.reorder__bill > .reorder__bill-total strong {
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.reorder__paybar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  width: min(420px, 100%);
+  min-height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 16px;
+  transform: translateX(-50%);
+  border-top: 1px solid var(--border);
+  background: #fff;
+  z-index: 20;
+}
+
+.reorder__paybar div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.reorder__paybar span {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.reorder__paybar strong {
+  color: var(--green);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.reorder__paybar button {
+  width: 48%;
+  height: 42px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--green);
+  color: #fff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
