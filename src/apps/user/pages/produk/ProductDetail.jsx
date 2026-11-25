@@ -99,7 +99,7 @@ export default function ProductDetail() {
             aria-label={`Lihat ${p.reviews || "semua"} ulasan untuk ${p.name}`}
             onClick={() => navigate(`/produk/${id}/ulasan`, { state: { product: p } })}
           >
-            <Star size={13} fill="#f5a623" stroke="#f5a623" /> <b>{p.rating}</b>
+            <Star size={13} fill="var(--sp-rating)" stroke="var(--sp-rating)" /> <b>{p.rating}</b>
             {p.reviews && <> ({p.reviews} ulasan)</>}
             {p.sold && <> • Terjual {p.sold}</>}
           </button>

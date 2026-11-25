@@ -1,3 +1,20 @@
+:root {
+  --sp-primary: #528f1e;
+  --sp-deep: #1e3a20;
+  --sp-muted: #6f886a;
+  --sp-page: #f4f8f1;
+  --sp-surface: #ffffff;
+  --sp-container: #ebf3e7;
+  --sp-border: #d5e2cc;
+  --sp-danger: #d82424;
+  --sp-danger-soft: #fff0ef;
+  --sp-warning: #f09c06;
+  --sp-warning-soft: #fff4c9;
+  --sp-rating: #fcd21e;
+  --sp-info: #3272b8;
+  --sp-info-soft: #eaf2ff;
+}
+
 body {
   margin: 0;
   background: #e9ebe2;

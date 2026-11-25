@@ -1,15 +1,15 @@
 .change-password {
-  --green: #4f8a1c;
-  --green-dark: #1f3d12;
-  --muted: #788273;
-  --border: #e4e9dc;
+  --green: var(--sp-primary);
+  --green-dark: var(--sp-deep);
+  --muted: var(--sp-muted);
+  --border: var(--sp-border);
   box-sizing: border-box;
   max-width: 420px;
   min-height: 100vh;
   margin: 0 auto;
   padding-bottom: 66px;
-  background: #f7f8f9;
-  color: #263126;
+  background: var(--sp-surface);
+  color: var(--sp-deep);
   font-family: "Inter", system-ui, sans-serif;
 }
 
@@ -25,7 +25,7 @@
   align-items: center;
   gap: 9px;
   padding: 0 15px;
-  background: #fff;
+  background: var(--sp-surface);
   border-bottom: 1px solid var(--border);
 }
 
@@ -38,14 +38,14 @@
   padding: 0;
   border: 1px solid var(--border);
   border-radius: 50%;
-  background: #f7f9f5;
+  background: var(--sp-page);
   color: var(--green-dark);
   cursor: pointer;
 }
 
 .change-password__header h1 {
   margin: 0;
-  color: #273328;
+  color: var(--sp-deep);
   font-size: 13px;
   font-weight: 700;
 }
@@ -53,9 +53,9 @@
 .change-password__form {
   margin: 10px 12px 0;
   padding: 10px;
-  border: 1px solid #dfe8d6;
+  border: 1px solid var(--sp-border);
   border-radius: 12px;
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .change-password__notice {
@@ -65,10 +65,10 @@
   gap: 7px;
   margin-bottom: 10px;
   padding: 7px 8px;
-  border: 1px solid #d7e7c9;
+  border: 1px solid var(--sp-border);
   border-radius: 9px;
-  background: #f3f8ed;
-  color: #607654;
+  background: var(--sp-page);
+  color: var(--sp-primary);
   font-size: 8px;
   line-height: 1.4;
 }
@@ -85,7 +85,7 @@
 .change-password__field-wrap label {
   display: block;
   margin: 0 0 4px;
-  color: #60705a;
+  color: var(--sp-primary);
   font-size: 8px;
   font-weight: 600;
 }
@@ -95,9 +95,9 @@
   display: flex;
   align-items: center;
   padding: 0 8px;
-  border: 1px solid #e1e7dc;
+  border: 1px solid var(--sp-border);
   border-radius: 8px;
-  background: #fbfcfa;
+  background: var(--sp-page);
 }
 
 .change-password__field:focus-within {
@@ -112,7 +112,7 @@
   border: 0;
   outline: 0;
   background: transparent;
-  color: #384433;
+  color: var(--sp-deep);
   font: inherit;
   font-size: 10px;
 }
@@ -125,7 +125,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: #7d8b75;
+  color: var(--sp-primary);
   cursor: pointer;
 }
 
@@ -142,15 +142,15 @@
 }
 
 .change-password__match.is-invalid {
-  color: #d84a43;
+  color: var(--sp-danger);
 }
 
 .change-password__requirements {
   margin-top: 10px;
   padding: 9px;
-  border: 1px solid #e0e8d8;
+  border: 1px solid var(--sp-border);
   border-radius: 9px;
-  background: #f8faf5;
+  background: var(--sp-page);
 }
 
 .change-password__requirements header {
@@ -162,7 +162,7 @@
 }
 
 .change-password__requirements header strong {
-  color: #53644b;
+  color: var(--sp-primary);
   font-size: 8px;
   font-weight: 700;
 }
@@ -170,7 +170,7 @@
 .change-password__requirements header > span {
   padding: 2px 6px;
   border-radius: 5px;
-  background: #ffb82e;
+  background: var(--sp-warning);
   color: #fff;
   font-size: 7px;
   font-weight: 700;
@@ -185,7 +185,7 @@
   align-items: center;
   gap: 5px;
   margin: 5px 0 0;
-  color: #899184;
+  color: var(--sp-muted);
   font-size: 7px;
 }
 
@@ -195,13 +195,13 @@
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  border: 1px solid #b9c3b1;
+  border: 1px solid var(--sp-border);
   border-radius: 50%;
   color: #fff;
 }
 
 .change-password__requirements > p.is-valid {
-  color: #5c7650;
+  color: var(--sp-primary);
 }
 
 .change-password__requirements > p.is-valid > span:first-child {
@@ -221,7 +221,7 @@
   overflow: hidden;
   margin-top: 8px;
   border-radius: 3px;
-  background: #e5e9e1;
+  background: var(--sp-page);
 }
 
 .change-password__strength span {
@@ -234,7 +234,7 @@
 
 .change-password__error {
   margin: 9px 1px 0;
-  color: #d84a43;
+  color: var(--sp-danger);
   font-size: 8px;
   line-height: 1.4;
 }
@@ -247,7 +247,7 @@
   padding: 8px 12px;
   transform: translateX(-50%);
   border-top: 1px solid var(--border);
-  background: #fff;
+  background: var(--sp-surface);
   z-index: 20;
 }
 
@@ -270,6 +270,6 @@
 
 .change-password__footer button:disabled {
   background: #d8e3d0;
-  color: #8d9f82;
+  color: var(--sp-primary);
   cursor: not-allowed;
 }

@@ -92,7 +92,7 @@ export default function ProductReviews() {
               </span>
               <div>
                 <strong>{review.name}</strong>
-                <small><Star size={9} fill="#f5a623" stroke="#f5a623" /> 5.0 <i>•</i> {review.date}</small>
+                <small><Star size={9} fill="var(--sp-rating)" stroke="var(--sp-rating)" /> 5.0 <i>•</i> {review.date}</small>
               </div>
             </header>
             <p>{review.comment}</p>

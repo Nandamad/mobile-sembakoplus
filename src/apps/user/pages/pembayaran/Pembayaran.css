@@ -1,16 +1,16 @@
 .qris-payment,
 .payment-status {
-  --green: #4f8a1c;
-  --green-dark: #244b19;
-  --muted: #788273;
-  --border: #e2e8de;
+  --green: var(--sp-primary);
+  --green-dark: var(--sp-deep);
+  --muted: var(--sp-muted);
+  --border: var(--sp-border);
   box-sizing: border-box;
   max-width: 420px;
   min-height: 100vh;
   margin: 0 auto;
   padding-bottom: 66px;
-  background: #f7f8f3;
-  color: #263126;
+  background: var(--sp-page);
+  color: var(--sp-deep);
   font-family: "Inter", system-ui, sans-serif;
 }
 
@@ -30,7 +30,7 @@
   gap: 7px;
   padding: 0 11px;
   border-bottom: 1px solid var(--border);
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .payment-flow__header button {
@@ -41,14 +41,14 @@
   padding: 0;
   border: 1px solid var(--border);
   border-radius: 50%;
-  background: #f7f9f5;
+  background: var(--sp-page);
   color: var(--green-dark);
   cursor: pointer;
 }
 
 .payment-flow__header h1 {
   margin: 0;
-  color: #263126;
+  color: var(--sp-deep);
   font-size: 11px;
   font-weight: 750;
 }
@@ -62,8 +62,8 @@
   padding: 0 8px;
   border: 1px solid #f0d26c;
   border-radius: 6px;
-  background: #fff4c9;
-  color: #a56a13;
+  background: var(--sp-warning-soft);
+  color: var(--sp-warning);
   font-size: 7px;
 }
 
@@ -73,8 +73,8 @@
 
 .qris-payment__timer.is-expired {
   border-color: #efb4ad;
-  background: #fff2f0;
-  color: #bb443a;
+  background: var(--sp-danger-soft);
+  color: var(--sp-danger);
 }
 
 .qris-payment__card {
@@ -83,14 +83,14 @@
   padding: 9px;
   border: 1px solid var(--border);
   border-radius: 9px;
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .qris-payment__merchant {
   display: grid;
   gap: 4px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #edf0ea;
+  border-bottom: 1px solid var(--sp-border);
 }
 
 .qris-payment__merchant > span {
@@ -100,24 +100,24 @@
 }
 
 .qris-payment__merchant > span b {
-  color: #e43132;
+  color: var(--sp-danger);
   font-size: 10px;
   font-weight: 800;
 }
 
 .qris-payment__merchant > span small {
-  color: #83907c;
+  color: var(--sp-muted);
   font-size: 5px;
   font-weight: 700;
 }
 
 .qris-payment__merchant > strong {
-  color: #34402f;
+  color: var(--sp-deep);
   font-size: 8px;
 }
 
 .qris-payment__merchant > small {
-  color: #869080;
+  color: var(--sp-muted);
   font-size: 5.5px;
 }
 
@@ -137,9 +137,9 @@
   grid-template-rows: repeat(25, 1fr);
   gap: 1px;
   padding: 7px;
-  border: 1px solid #e8ede6;
+  border: 1px solid var(--sp-border);
   border-radius: 4px;
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .qris-payment__qr > span {
@@ -156,7 +156,7 @@
   left: 50%;
   padding: 4px 5px;
   transform: translate(-50%, -50%);
-  border: 2px solid #fff;
+  border: 2px solid var(--sp-border);
   border-radius: 3px;
   background: var(--green);
   color: #fff;
@@ -166,7 +166,7 @@
 
 .qris-payment__qr-wrap > p {
   margin: 0;
-  color: #899385;
+  color: var(--sp-muted);
   font-size: 5.5px;
 }
 
@@ -180,10 +180,10 @@
 
 .qris-payment__wallets span {
   padding: 2px 5px;
-  border: 1px solid #e5eae1;
+  border: 1px solid var(--sp-border);
   border-radius: 4px;
-  background: #f8faf6;
-  color: #626e5e;
+  background: var(--sp-page);
+  color: var(--sp-primary);
   font-size: 5.5px;
 }
 
@@ -191,18 +191,18 @@
   display: grid;
   gap: 2px;
   padding: 6px 7px;
-  border: 1px solid #dfe8d8;
+  border: 1px solid var(--sp-border);
   border-radius: 5px;
-  background: #f2f7ee;
+  background: var(--sp-page);
 }
 
 .qris-payment__total span {
-  color: #778371;
+  color: var(--sp-muted);
   font-size: 5.5px;
 }
 
 .qris-payment__total strong {
-  color: #294d1d;
+  color: var(--sp-deep);
   font-size: 10px;
   font-weight: 800;
 }
@@ -221,10 +221,10 @@
   justify-content: center;
   gap: 3px;
   padding: 0 5px;
-  border: 1px solid #dfe8d8;
+  border: 1px solid var(--sp-border);
   border-radius: 4px;
-  background: #fff;
-  color: #526647;
+  background: var(--sp-surface);
+  color: var(--sp-primary);
   font: inherit;
   font-size: 5.5px;
   cursor: pointer;
@@ -232,7 +232,7 @@
 
 .qris-payment__notice {
   margin: 5px 0 0;
-  color: #a14832;
+  color: var(--sp-danger);
   font-size: 5.5px;
   line-height: 1.4;
 }
@@ -242,11 +242,11 @@
   padding: 8px;
   border: 1px solid var(--border);
   border-radius: 7px;
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .qris-payment__instructions > strong {
-  color: #34402f;
+  color: var(--sp-deep);
   font-size: 6.5px;
 }
 
@@ -255,14 +255,14 @@
   gap: 3px;
   margin: 5px 0 0;
   padding-left: 14px;
-  color: #778371;
+  color: var(--sp-muted);
   font-size: 5.5px;
   line-height: 1.35;
 }
 
 .qris-payment__instructions > p {
   margin: 6px 0 0;
-  color: #a14832;
+  color: var(--sp-danger);
   font-size: 5.5px;
   font-weight: 650;
 }
@@ -279,7 +279,7 @@
   padding: 8px 10px 10px;
   transform: translateX(-50%);
   border-top: 1px solid var(--border);
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .payment-flow__footer button,
@@ -309,7 +309,7 @@
   padding: 16px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--sp-surface);
   color: var(--muted);
   text-align: center;
   font-size: 9px;
@@ -349,7 +349,7 @@
 
 .payment-status__success h2 {
   margin: 3px 0 0;
-  color: #2f4728;
+  color: var(--sp-deep);
   font-size: 10px;
   font-weight: 750;
 }
@@ -362,8 +362,8 @@
 .payment-status__success > small {
   padding: 3px 7px;
   border-radius: 8px;
-  background: #edf5e6;
-  color: #557447;
+  background: var(--sp-page);
+  color: var(--sp-primary);
   font-size: 5px;
   font-weight: 750;
   letter-spacing: .025em;
@@ -374,12 +374,12 @@
   padding: 9px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .payment-status__transaction h3 {
   margin: 0 0 6px;
-  color: #34402f;
+  color: var(--sp-deep);
   font-size: 7px;
 }
 
@@ -389,8 +389,8 @@
   justify-content: space-between;
   gap: 8px;
   padding: 3px 0;
-  border-bottom: 1px solid #f1f3ef;
-  color: #788273;
+  border-bottom: 1px solid var(--sp-border);
+  color: var(--sp-muted);
   font-size: 5.5px;
 }
 
@@ -399,7 +399,7 @@
 }
 
 .payment-status__transaction > div strong {
-  color: #34402f;
+  color: var(--sp-deep);
   text-align: right;
   font-size: 5.5px;
   font-weight: 650;
@@ -415,9 +415,9 @@
   gap: 6px;
   margin: 0 10px;
   padding: 8px;
-  border: 1px solid #dce8d3;
+  border: 1px solid var(--sp-border);
   border-radius: 8px;
-  background: #eff6e9;
+  background: var(--sp-page);
 }
 
 .payment-status__processing > span {
@@ -426,7 +426,7 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: #fff;
+  background: var(--sp-surface);
   color: var(--green);
 }
 
@@ -436,7 +436,7 @@
 }
 
 .payment-status__processing strong {
-  color: #34402f;
+  color: var(--sp-deep);
   font-size: 6.5px;
 }
 
@@ -447,7 +447,7 @@
 
 .payment-status__processing p {
   margin: 0;
-  color: #75816f;
+  color: var(--sp-muted);
   font-size: 5px;
   line-height: 1.4;
 }
@@ -458,7 +458,7 @@
 
 .payment-status__footer button.is-secondary {
   min-height: 29px;
-  border: 1px solid #dfe8d8;
-  background: #fff;
+  border: 1px solid var(--sp-border);
+  background: var(--sp-surface);
   color: var(--green-dark);
 }

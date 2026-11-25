@@ -1,15 +1,15 @@
 .payment-guide {
-  --green: #4f8a1c;
-  --green-dark: #244b19;
-  --muted: #788273;
-  --border: #e2e8de;
+  --green: var(--sp-primary);
+  --green-dark: var(--sp-deep);
+  --muted: var(--sp-muted);
+  --border: var(--sp-border);
   box-sizing: border-box;
   max-width: 420px;
   min-height: 100vh;
   margin: 0 auto;
   padding-bottom: 54px;
-  background: #f7f8f6;
-  color: #263126;
+  background: var(--sp-page);
+  color: var(--sp-deep);
   font-family: "Inter", system-ui, sans-serif;
 }
 
@@ -26,7 +26,7 @@
   gap: 7px;
   padding: 0 10px;
   border-bottom: 1px solid var(--border);
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .payment-guide__header button {
@@ -38,14 +38,14 @@
   padding: 0;
   border: 1px solid var(--border);
   border-radius: 50%;
-  background: #f7f9f5;
+  background: var(--sp-page);
   color: var(--green-dark);
   cursor: pointer;
 }
 
 .payment-guide__header h1 {
   margin: 0;
-  color: #273328;
+  color: var(--sp-deep);
   font-size: 9px;
   font-weight: 700;
 }
@@ -62,9 +62,9 @@
   align-items: start;
   gap: 6px;
   padding: 7px;
-  border: 1px solid #dfe9d7;
+  border: 1px solid var(--sp-border);
   border-radius: 8px;
-  background: #eff6e9;
+  background: var(--sp-page);
 }
 
 .payment-guide__intro > span {
@@ -73,21 +73,21 @@
   display: grid;
   place-items: center;
   border-radius: 5px;
-  background: #fff;
+  background: var(--sp-surface);
   color: var(--green);
 }
 
 .payment-guide__intro > div strong {
   display: block;
   margin: 1px 0 3px;
-  color: #34412f;
+  color: var(--sp-deep);
   font-size: 7px;
   font-weight: 700;
 }
 
 .payment-guide__intro p {
   margin: 0;
-  color: #677260;
+  color: var(--sp-primary);
   font-size: 5.7px;
   line-height: 1.4;
 }
@@ -95,7 +95,7 @@
 .payment-guide__intro > small {
   padding: 2px 4px;
   border-radius: 5px;
-  background: #fff;
+  background: var(--sp-surface);
   color: var(--green);
   font-size: 4.8px;
   font-weight: 700;
@@ -105,7 +105,7 @@
   padding: 7px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .payment-guide__section-title {
@@ -113,12 +113,12 @@
   align-items: center;
   gap: 5px;
   padding-bottom: 5px;
-  border-bottom: 1px solid #edf0e9;
+  border-bottom: 1px solid var(--sp-border);
 }
 
 .payment-guide__section-title > strong {
   flex: 1;
-  color: #354131;
+  color: var(--sp-deep);
   font-size: 7px;
   font-weight: 700;
 }
@@ -126,7 +126,7 @@
 .payment-guide__section-title > small {
   padding: 2px 4px;
   border-radius: 4px;
-  background: #eef6e8;
+  background: var(--sp-page);
   color: var(--green);
   font-size: 4.8px;
   font-weight: 650;
@@ -141,13 +141,13 @@
 }
 
 .payment-guide__icon--qris {
-  background: #fff0ef;
-  color: #d9433d;
+  background: var(--sp-danger-soft);
+  color: var(--sp-danger);
 }
 
 .payment-guide__icon--cod {
-  background: #fff7e7;
-  color: #b98519;
+  background: var(--sp-warning-soft);
+  color: var(--sp-warning);
 }
 
 .payment-guide__steps {
@@ -179,14 +179,14 @@
 
 .payment-guide__steps li > div strong {
   display: block;
-  color: #394535;
+  color: var(--sp-deep);
   font-size: 6px;
   font-weight: 700;
 }
 
 .payment-guide__steps li p {
   margin: 2px 0 0;
-  color: #788273;
+  color: var(--sp-muted);
   font-size: 5.4px;
   line-height: 1.4;
 }
@@ -199,8 +199,8 @@
   padding: 5px;
   border: 1px solid #f1e0a9;
   border-radius: 5px;
-  background: #fff9e8;
-  color: #8d6a1e;
+  background: var(--sp-warning-soft);
+  color: var(--sp-warning);
   font-size: 5.2px;
   line-height: 1.35;
 }
@@ -210,9 +210,9 @@
 }
 
 .payment-guide__note--safe {
-  border-color: #e1ead9;
-  background: #f4f8f0;
-  color: #687b5d;
+  border-color: var(--sp-border);
+  background: var(--sp-page);
+  color: var(--sp-primary);
 }
 
 .payment-guide__secure {
@@ -220,9 +220,9 @@
   align-items: center;
   gap: 5px;
   padding: 7px;
-  border: 1px solid #e0ead8;
+  border: 1px solid var(--sp-border);
   border-radius: 7px;
-  background: #fff;
+  background: var(--sp-surface);
   color: var(--green);
 }
 
@@ -230,13 +230,13 @@
   flex: 1;
   display: grid;
   gap: 2px;
-  color: #354131;
+  color: var(--sp-deep);
   font-size: 6px;
   font-weight: 650;
 }
 
 .payment-guide__secure small {
-  color: #7d8876;
+  color: var(--sp-muted);
   font-size: 5.2px;
   font-weight: 400;
 }
@@ -250,7 +250,7 @@
   padding: 7px 10px calc(7px + env(safe-area-inset-bottom));
   transform: translateX(-50%);
   border-top: 1px solid var(--border);
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .payment-guide__footer button {

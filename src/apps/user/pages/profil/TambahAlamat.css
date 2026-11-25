@@ -1,15 +1,15 @@
 .add-address {
-  --green: #4f8a1c;
-  --green-dark: #1f3d12;
-  --muted: #788273;
-  --border: #e4e9dc;
+  --green: var(--sp-primary);
+  --green-dark: var(--sp-deep);
+  --muted: var(--sp-muted);
+  --border: var(--sp-border);
   box-sizing: border-box;
   max-width: 420px;
   min-height: 100vh;
   margin: 0 auto;
   padding-bottom: 65px;
-  background: #f7f8f9;
-  color: #263126;
+  background: var(--sp-surface);
+  color: var(--sp-deep);
   font-family: "Inter", system-ui, sans-serif;
 }
 
@@ -25,7 +25,7 @@
   align-items: center;
   gap: 9px;
   padding: 0 15px;
-  background: #fff;
+  background: var(--sp-surface);
   border-bottom: 1px solid var(--border);
 }
 
@@ -38,14 +38,14 @@
   padding: 0;
   border: 1px solid var(--border);
   border-radius: 50%;
-  background: #f7f9f5;
+  background: var(--sp-page);
   color: var(--green-dark);
   cursor: pointer;
 }
 
 .add-address__header h1 {
   margin: 0;
-  color: #273328;
+  color: var(--sp-deep);
   font-size: 13px;
   font-weight: 700;
 }
@@ -62,7 +62,7 @@
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 11px;
-  background: #f7f9f5;
+  background: var(--sp-page);
 }
 
 .add-address__map-grid {
@@ -71,7 +71,7 @@
   opacity: .8;
   background:
     linear-gradient(90deg, transparent 24%, #fff 24% 31%, transparent 31% 68%, #fff 68% 74%, transparent 74%),
-    linear-gradient(0deg, #e5eee0 38%, #fff 38% 46%, #e5eee0 46% 71%, #fff 71% 78%, #e5eee0 78%);
+    linear-gradient(0deg, var(--sp-page) 38%, var(--sp-danger-soft) 38% 46%, var(--sp-page) 46% 71%, var(--sp-danger-soft) 71% 78%, var(--sp-page) 78%);
 }
 
 .add-address__marker {
@@ -94,7 +94,7 @@
   justify-content: space-between;
   gap: 8px;
   padding: 4px 8px;
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .add-address__map-info > div {
@@ -104,7 +104,7 @@
 }
 
 .add-address__map-info strong {
-  color: #354032;
+  color: var(--sp-deep);
   font-size: 8px;
 }
 
@@ -115,9 +115,9 @@
 
 .add-address__map-info button {
   padding: 4px 7px;
-  border: 1px solid #dfe8d6;
+  border: 1px solid var(--sp-border);
   border-radius: 7px;
-  background: #fff;
+  background: var(--sp-surface);
   color: var(--green);
   font: inherit;
   font-size: 7px;
@@ -130,7 +130,7 @@
   padding: 10px;
   border: 1px solid var(--border);
   border-radius: 12px;
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .add-address__types {
@@ -145,7 +145,7 @@
 .add-address__types legend {
   grid-column: 1 / -1;
   margin-bottom: 5px;
-  color: #687560;
+  color: var(--sp-primary);
   font-size: 7px;
   font-weight: 700;
   text-transform: uppercase;
@@ -156,7 +156,7 @@
   padding: 5px 9px;
   border: 1px solid var(--border);
   border-radius: 12px;
-  color: #687560;
+  color: var(--sp-primary);
   font-size: 8px;
   text-align: center;
   cursor: pointer;
@@ -164,7 +164,7 @@
 
 .add-address__types label.is-selected {
   border-color: var(--green);
-  background: #edf5e6;
+  background: var(--sp-page);
   color: var(--green);
   font-weight: 700;
 }
@@ -177,7 +177,7 @@
 
 .add-address__label {
   margin-top: 2px;
-  color: #687560;
+  color: var(--sp-primary);
   font-size: 7px;
   font-weight: 600;
 }
@@ -186,11 +186,11 @@
   width: 100%;
   min-height: 31px;
   padding: 6px 8px;
-  border: 1px solid #e1e7dc;
+  border: 1px solid var(--sp-border);
   border-radius: 7px;
   outline: 0;
-  background: #fafbf9;
-  color: #465242;
+  background: var(--sp-page);
+  color: var(--sp-primary);
   font: inherit;
   font-size: 8px;
 }
@@ -213,7 +213,7 @@
   padding: 9px 10px;
   border: 1px solid var(--border);
   border-radius: 11px;
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .add-address__primary > span {
@@ -223,7 +223,7 @@
 }
 
 .add-address__primary strong {
-  color: #354032;
+  color: var(--sp-deep);
   font-size: 8px;
 }
 
@@ -255,7 +255,7 @@
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--sp-surface);
   transition: transform .18s ease;
 }
 
@@ -269,7 +269,7 @@
 
 .add-address__error {
   margin: 0 2px;
-  color: #c83d37;
+  color: var(--sp-danger);
   font-size: 8px;
 }
 
@@ -281,7 +281,7 @@
   padding: 8px 12px;
   transform: translateX(-50%);
   border-top: 1px solid var(--border);
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .add-address__footer button {
@@ -314,9 +314,9 @@
 }
 
 .add-address__footer--edit .add-address__delete {
-  border: 1px solid #efc7c4;
-  background: #fff6f5;
-  color: #c83d37;
+  border: 1px solid var(--sp-border);
+  background: var(--sp-danger-soft);
+  color: var(--sp-danger);
 }
 
 .add-address__dialog-backdrop {
@@ -335,12 +335,12 @@
   width: 100%;
   padding: 17px;
   border-radius: 12px;
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .add-address__dialog h2 {
   margin: 0 0 6px;
-  color: #34402f;
+  color: var(--sp-deep);
   font-size: 12px;
 }
 
@@ -363,8 +363,8 @@
   padding: 0 11px;
   border: 1px solid var(--border);
   border-radius: 16px;
-  background: #fff;
-  color: #596653;
+  background: var(--sp-surface);
+  color: var(--sp-primary);
   font: inherit;
   font-size: 8px;
   font-weight: 650;
@@ -373,6 +373,6 @@
 
 .add-address__dialog .add-address__dialog-confirm {
   border-color: #c83d37;
-  background: #c83d37;
+  background: var(--sp-danger);
   color: #fff;
 }

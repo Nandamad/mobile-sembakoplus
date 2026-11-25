@@ -1,11 +1,11 @@
 .bnav {
   position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
   width: min(420px, 100%); display: grid; grid-template-columns: repeat(4, 1fr);
-  padding: 8px 0 10px; background: #fff; border-top: 1px solid #e6e8da; z-index: 20;
+  padding: 8px 0 10px; background: var(--sp-surface); border-top: 1px solid var(--sp-border); z-index: 20;
   font-family: "Inter", system-ui, sans-serif;
 }
 .bnav__item {
   display: flex; flex-direction: column; align-items: center; gap: 3px;
-  font-size: 10.5px; color: #8a8a80; text-decoration: none;
+  font-size: 10.5px; color: var(--sp-muted); text-decoration: none;
 }
-.bnav__item.is-active { color: #4f8a1c; font-weight: 700; }
+.bnav__item.is-active { color: var(--sp-primary); font-weight: 700; }

@@ -1,15 +1,15 @@
 .profile {
-  --green: #4f8a1c;
-  --green-dark: #1f3d12;
-  --muted: #8a8e8a;
-  --border: #e8ebe6;
+  --green: var(--sp-primary);
+  --green-dark: var(--sp-deep);
+  --muted: var(--sp-muted);
+  --border: var(--sp-border);
   box-sizing: border-box;
   max-width: 420px;
   min-height: 100vh;
   margin: 0 auto;
   padding-bottom: 82px;
-  background: #f7f8f9;
-  color: #263126;
+  background: var(--sp-page);
+  color: var(--sp-deep);
   font-family: "Inter", system-ui, sans-serif;
 }
 
@@ -25,8 +25,8 @@
   align-items: center;
   gap: 12px;
   padding: 0 18px;
-  background: #fff;
-  border-top: 1px solid #f0f1ee;
+  background: var(--sp-surface);
+  border-top: 1px solid var(--sp-border);
 }
 
 .profile__avatar {
@@ -52,7 +52,7 @@
   padding: 5px 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--sp-surface);
   color: var(--green);
   font: inherit;
   font-size: 11px;
@@ -72,7 +72,7 @@
   align-items: center;
   gap: 7px;
   padding: 6px 8px;
-  border: 1px solid #e8eee1;
+  border: 1px solid var(--sp-border);
   border-radius: 10px;
   text-align: left;
   font: inherit;
@@ -80,12 +80,12 @@
 }
 
 .profile__reward--points {
-  background: #fff9e9;
-  color: #b57a12;
+  background: var(--sp-warning-soft);
+  color: var(--sp-warning);
 }
 
 .profile__reward--voucher {
-  background: #eff7eb;
+  background: var(--sp-page);
   color: var(--green);
 }
 
@@ -108,14 +108,14 @@
 
 .profile__reward strong {
   overflow: hidden;
-  color: #354131;
+  color: var(--sp-deep);
   font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .profile__reward small {
-  color: #818a7b;
+  color: var(--sp-muted);
   font-size: 8px;
   white-space: nowrap;
 }
@@ -124,9 +124,9 @@
   margin: 8px 16px 0;
   padding: 4px 10px;
   overflow: hidden;
-  border: 1px solid #edf0e9;
+  border: 1px solid var(--sp-border);
   border-radius: 12px;
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .profile__item {
@@ -137,7 +137,7 @@
   gap: 10px;
   padding: 8px 2px;
   border: 0;
-  border-bottom: 1px solid #f0f1ee;
+  border-bottom: 1px solid var(--sp-border);
   background: transparent;
   color: inherit;
   text-align: left;
@@ -159,23 +159,23 @@
 }
 
 .profile__item-icon--green {
-  background: #edf5e6;
-  color: #548b25;
+  background: var(--sp-page);
+  color: var(--sp-primary);
 }
 
 .profile__item-icon--blue {
-  background: #eaf2ff;
-  color: #4c78bd;
+  background: var(--sp-info-soft);
+  color: var(--sp-info);
 }
 
 .profile__item-icon--teal {
-  background: #e8f4ef;
-  color: #21836c;
+  background: var(--sp-page);
+  color: var(--sp-muted);
 }
 
 .profile__item-icon--gray {
-  background: #f0f1f2;
-  color: #646d76;
+  background: var(--sp-page);
+  color: var(--sp-muted);
 }
 
 .profile__item-copy {
@@ -188,7 +188,7 @@
 
 .profile__item-copy strong {
   overflow: hidden;
-  color: #263126;
+  color: var(--sp-deep);
   font-size: 12px;
   font-weight: 650;
   text-overflow: ellipsis;
@@ -212,7 +212,7 @@
 
 .profile__chevron {
   flex: 0 0 auto;
-  color: #9da39b;
+  color: var(--sp-muted);
 }
 
 .profile__logout {
@@ -225,8 +225,8 @@
   margin: 14px 16px 0;
   border: 1px solid #ffb9b9;
   border-radius: 11px;
-  background: #fff6f6;
-  color: #e44444;
+  background: var(--sp-danger-soft);
+  color: var(--sp-danger);
   font: inherit;
   font-size: 12px;
   font-weight: 600;
@@ -235,7 +235,7 @@
 
 .profile__version {
   margin: 16px 12px 0;
-  color: #aab4bd;
+  color: var(--sp-muted);
   font-size: 10px;
   text-align: center;
 }
@@ -258,7 +258,7 @@
   width: min(100%, 360px);
   padding: 22px 18px 18px;
   border-radius: 17px;
-  background: #fff;
+  background: var(--sp-surface);
   text-align: center;
 }
 
@@ -268,10 +268,10 @@
   display: grid;
   place-items: center;
   margin: 0 auto 12px;
-  border: 1px solid #ffc8c5;
+  border: 1px solid var(--sp-border);
   border-radius: 50%;
-  background: #fff4f3;
-  color: #e23b36;
+  background: var(--sp-danger-soft);
+  color: var(--sp-danger);
 }
 
 .profile__dialog h2 {
@@ -301,13 +301,13 @@
 
 .profile__dialog-confirm {
   border: 0;
-  background: #df302d;
+  background: var(--sp-danger);
   color: #fff;
 }
 
 .profile__dialog-cancel {
   margin-top: 7px;
   border: 1px solid var(--border);
-  background: #fff;
+  background: var(--sp-surface);
   color: var(--green-dark);
 }

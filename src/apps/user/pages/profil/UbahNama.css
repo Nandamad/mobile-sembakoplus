@@ -1,15 +1,15 @@
 .edit-name {
-  --green: #4f8a1c;
-  --green-dark: #1f3d12;
-  --muted: #788273;
-  --border: #e4e9dc;
+  --green: var(--sp-primary);
+  --green-dark: var(--sp-deep);
+  --muted: var(--sp-muted);
+  --border: var(--sp-border);
   box-sizing: border-box;
   max-width: 420px;
   min-height: 100vh;
   margin: 0 auto;
   padding-bottom: 64px;
-  background: #f7f8f9;
-  color: #263126;
+  background: var(--sp-surface);
+  color: var(--sp-deep);
   font-family: "Inter", system-ui, sans-serif;
 }
 
@@ -25,7 +25,7 @@
   align-items: center;
   gap: 9px;
   padding: 0 15px;
-  background: #fff;
+  background: var(--sp-surface);
   border-bottom: 1px solid var(--border);
 }
 
@@ -38,14 +38,14 @@
   padding: 0;
   border: 1px solid var(--border);
   border-radius: 50%;
-  background: #f7f9f5;
+  background: var(--sp-page);
   color: var(--green-dark);
   cursor: pointer;
 }
 
 .edit-name__header h1 {
   margin: 0;
-  color: #273328;
+  color: var(--sp-deep);
   font-size: 13px;
   font-weight: 700;
 }
@@ -57,7 +57,7 @@
 .edit-name__form > label {
   display: block;
   margin-bottom: 5px;
-  color: #465242;
+  color: var(--sp-primary);
   font-size: 9px;
   font-weight: 600;
 }
@@ -69,7 +69,7 @@
   padding: 0 9px;
   border: 1px solid var(--green);
   border-radius: 10px;
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .edit-name__input:focus-within {
@@ -82,7 +82,7 @@
   border: 0;
   outline: 0;
   background: transparent;
-  color: #273328;
+  color: var(--sp-deep);
   font: inherit;
   font-size: 11px;
   font-weight: 600;
@@ -96,8 +96,8 @@
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: #e9eee5;
-  color: #687263;
+  background: var(--sp-page);
+  color: var(--sp-muted);
   cursor: pointer;
 }
 
@@ -113,16 +113,16 @@
   align-items: flex-start;
   gap: 5px;
   padding: 8px;
-  border: 1px solid #e8eee1;
+  border: 1px solid var(--sp-border);
   border-radius: 8px;
-  background: #fbfcf9;
+  background: var(--sp-page);
   color: var(--muted);
   font-size: 7px;
   line-height: 1.4;
 }
 
 .edit-name__form aside span {
-  color: #b7a56a;
+  color: var(--sp-warning);
 }
 
 .edit-name__footer {
@@ -133,7 +133,7 @@
   padding: 8px 12px;
   transform: translateX(-50%);
   border-top: 1px solid var(--border);
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .edit-name__footer button {

@@ -30,7 +30,11 @@ function RatingGroup({ title, description, rating, onRate, tags, selectedTags, o
             aria-pressed={rating === value}
             onClick={() => onRate(value)}
           >
-            <Star size={18} fill={value <= rating ? "#f5a623" : "transparent"} stroke="#f5a623" />
+            <Star
+              size={18}
+              fill={value <= rating ? "var(--sp-rating)" : "transparent"}
+              stroke="var(--sp-rating)"
+            />
           </button>
         ))}
         <strong>{rating === 5 ? "Sangat Baik (5/5)" : `${rating}/5`}</strong>

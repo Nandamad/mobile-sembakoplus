@@ -1,15 +1,15 @@
 .checkout {
-  --green: #4f8a1c;
-  --green-dark: #244b19;
-  --muted: #788273;
-  --border: #e2e8de;
+  --green: var(--sp-primary);
+  --green-dark: var(--sp-deep);
+  --muted: var(--sp-muted);
+  --border: var(--sp-border);
   box-sizing: border-box;
   max-width: 420px;
   min-height: 100vh;
   margin: 0 auto;
   padding: 0 10px 72px;
-  background: #f5f7f8;
-  color: #263126;
+  background: var(--sp-surface);
+  color: var(--sp-deep);
   font-family: "Inter", system-ui, sans-serif;
 }
 
@@ -27,7 +27,7 @@
   margin: 0 -10px 6px;
   padding: 0 11px;
   border-bottom: 1px solid var(--border);
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .checkout__header button {
@@ -38,14 +38,14 @@
   padding: 0;
   border: 1px solid var(--border);
   border-radius: 50%;
-  background: #fff;
+  background: var(--sp-surface);
   color: var(--green-dark);
   cursor: pointer;
 }
 
 .checkout__header h1 {
   margin: 0;
-  color: #263126;
+  color: var(--sp-deep);
   font-size: 12px;
   font-weight: 750;
 }
@@ -53,9 +53,9 @@
 .checkout__section {
   margin-bottom: 7px;
   padding: 9px;
-  border: 1px solid #e8ede6;
+  border: 1px solid var(--sp-border);
   border-radius: 7px;
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .checkout__address {
@@ -73,7 +73,7 @@
   display: grid;
   place-items: center;
   border-radius: 4px;
-  background: #eff6e9;
+  background: var(--sp-page);
   color: var(--green);
 }
 
@@ -83,7 +83,7 @@
 
 .checkout__address-copy strong {
   display: block;
-  color: #34402f;
+  color: var(--sp-deep);
   font-size: 8px;
   font-weight: 700;
 }
@@ -93,7 +93,7 @@
   display: block;
   overflow: hidden;
   margin: 2px 0 0;
-  color: #879082;
+  color: var(--sp-muted);
   font-size: 6.5px;
   line-height: 1.3;
   text-overflow: ellipsis;
@@ -102,9 +102,9 @@
 
 .checkout__address > button {
   padding: 3px 6px;
-  border: 1px solid #dfe7d9;
+  border: 1px solid var(--sp-border);
   border-radius: 4px;
-  background: #fff;
+  background: var(--sp-surface);
   color: var(--green);
   font: inherit;
   font-size: 6.5px;
@@ -122,7 +122,7 @@
   padding: 6px;
   border: 1px solid var(--border);
   border-radius: 6px;
-  background: #fff;
+  background: var(--sp-surface);
   box-shadow: 0 4px 12px rgb(34 50 28 / 12%);
 }
 
@@ -132,8 +132,8 @@
   padding: 5px;
   border: 1px solid transparent;
   border-radius: 4px;
-  background: #f8faf6;
-  color: #47543f;
+  background: var(--sp-page);
+  color: var(--sp-primary);
   text-align: left;
   font: inherit;
   cursor: pointer;
@@ -141,7 +141,7 @@
 
 .checkout__address-options button.is-selected {
   border-color: #9cbe80;
-  background: #f1f7eb;
+  background: var(--sp-page);
 }
 
 .checkout__address-options button strong {
@@ -150,7 +150,7 @@
 
 .checkout__address-options button span {
   overflow: hidden;
-  color: #788273;
+  color: var(--sp-muted);
   font-size: 5px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -177,7 +177,7 @@
 }
 
 .checkout__products > header strong {
-  color: #34402f;
+  color: var(--sp-deep);
   font-size: 7px;
 }
 
@@ -195,7 +195,7 @@
   align-items: center;
   gap: 5px;
   padding: 3px 0;
-  border-top: 1px solid #f0f2ed;
+  border-top: 1px solid var(--sp-border);
 }
 
 .checkout__product-image {
@@ -205,7 +205,7 @@
   place-items: center;
   overflow: hidden;
   border-radius: 3px;
-  background: #f6f8f3;
+  background: var(--sp-page);
   font-size: 20px;
 }
 
@@ -217,7 +217,7 @@
 
 .checkout__product > div strong {
   overflow: hidden;
-  color: #354131;
+  color: var(--sp-deep);
   font-size: 7px;
   font-weight: 650;
   text-overflow: ellipsis;
@@ -225,7 +225,7 @@
 }
 
 .checkout__product > div small {
-  color: #8a9285;
+  color: var(--sp-muted);
   font-size: 6px;
 }
 
@@ -249,7 +249,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #354131;
+  color: var(--sp-deep);
   font-size: 7px;
 }
 
@@ -267,8 +267,8 @@
   padding: 4px 5px;
   border: 1px solid var(--border);
   border-radius: 5px;
-  background: #fff;
-  color: #4c5946;
+  background: var(--sp-surface);
+  color: var(--sp-primary);
   text-align: left;
   font: inherit;
   cursor: pointer;
@@ -276,20 +276,20 @@
 
 .checkout__slots button.is-selected {
   border-color: #73a344;
-  background: #f1f7eb;
+  background: var(--sp-page);
 }
 
 .checkout__slots button > i {
   width: 8px;
   height: 8px;
   flex: 0 0 auto;
-  border: 1px solid #b8c5ae;
+  border: 1px solid var(--sp-border);
   border-radius: 50%;
 }
 
 .checkout__slots button.is-selected > i {
   border: 2px solid var(--green);
-  background: #fff;
+  background: var(--sp-surface);
   box-shadow: inset 0 0 0 2px #fff;
 }
 
@@ -299,18 +299,18 @@
 }
 
 .checkout__slots button strong {
-  color: #3e4c38;
+  color: var(--sp-primary);
   font-size: 6.8px;
 }
 
 .checkout__slots button small {
-  color: #879082;
+  color: var(--sp-muted);
   font-size: 5.8px;
 }
 
 .checkout__delivery > p {
   margin: 5px 0 0;
-  color: #7e8877;
+  color: var(--sp-muted);
   font-size: 6px;
 }
 
@@ -321,7 +321,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 5px;
-  color: #354131;
+  color: var(--sp-deep);
   font: inherit;
   cursor: pointer;
 }
@@ -335,7 +335,7 @@
 }
 
 .checkout__payment > span {
-  color: #354131;
+  color: var(--sp-deep);
 }
 
 .checkout__payment > strong {
@@ -350,7 +350,7 @@
 
 .checkout__bill h2 {
   margin: 0 0 7px;
-  color: #354131;
+  color: var(--sp-deep);
   font-size: 7px;
 }
 
@@ -360,12 +360,12 @@
   justify-content: space-between;
   gap: 6px;
   padding: 3px 0;
-  color: #788273;
+  color: var(--sp-muted);
   font-size: 6.5px;
 }
 
 .checkout__bill > div strong {
-  color: #4b5745;
+  color: var(--sp-primary);
   font-size: 6.5px;
   font-weight: 600;
 }
@@ -381,8 +381,8 @@
 .checkout__bill > div.checkout__bill-total {
   margin-top: 3px;
   padding-top: 5px;
-  border-top: 1px solid #edf0ea;
-  color: #34402f;
+  border-top: 1px solid var(--sp-border);
+  color: var(--sp-deep);
   font-weight: 700;
 }
 
@@ -394,7 +394,7 @@
 
 .checkout__message {
   margin: 5px 1px;
-  color: #a14832;
+  color: var(--sp-danger);
   font-size: 6px;
   line-height: 1.4;
 }
@@ -413,7 +413,7 @@
   padding: 6px 10px;
   transform: translateX(-50%);
   border-top: 1px solid var(--border);
-  background: #fff;
+  background: var(--sp-surface);
 }
 
 .checkout__footer > div {
@@ -422,7 +422,7 @@
 }
 
 .checkout__footer > div span {
-  color: #788273;
+  color: var(--sp-muted);
   font-size: 6px;
 }
 

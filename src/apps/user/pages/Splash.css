@@ -8,7 +8,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f8f9f2;
+  background: var(--sp-page);
   font-family: "Inter", system-ui, sans-serif;
 }
 
@@ -23,7 +23,7 @@
   height: 240px;
   top: -90px;
   left: -90px;
-  background: #e6f0dc;
+  background: var(--sp-page);
 }
 
 .splash__circle--peach {
@@ -31,7 +31,7 @@
   height: 220px;
   bottom: -80px;
   right: -80px;
-  background: #fdeedd;
+  background: var(--sp-warning-soft);
 }
 
 /* isi tengah */
@@ -54,7 +54,7 @@
   margin: 0 0 6px;
   font-size: 26px;
   font-weight: 700;
-  color: #1f3d12;
+  color: var(--sp-deep);
 }
 
 .splash__tagline {
@@ -63,7 +63,7 @@
   font-weight: 500;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #5b7a3a;
+  color: var(--sp-primary);
 }
 
 @keyframes splash-in {

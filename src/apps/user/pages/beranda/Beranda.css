@@ -1,9 +1,9 @@
 .beranda {
-  --bg: #f7f8f1;
-  --green: #4f8a1c;
-  --green-dark: #1f3d12;
-  --muted: #7c7c72;
-  --border: #e6e8da;
+  --bg: var(--sp-page);
+  --green: var(--sp-primary);
+  --green-dark: var(--sp-deep);
+  --muted: var(--sp-muted);
+  --border: var(--sp-border);
   box-sizing: border-box;
   max-width: 420px;
   min-height: 100vh;
@@ -11,7 +11,7 @@
   padding: 16px 16px 96px;
   background: var(--bg);
   font-family: "Inter", system-ui, sans-serif;
-  color: #2b2b2b;
+  color: var(--sp-deep);
 }
 .beranda *, .beranda *::before, .beranda *::after { box-sizing: border-box; }
 
@@ -23,17 +23,17 @@
 .beranda__brand span { font-size: 11px; color: var(--muted); }
 .beranda__icon {
   position: relative; width: 34px; height: 34px; display: grid; place-items: center;
-  border-radius: 50%; background: #fff; border: 1px solid var(--border); color: var(--green-dark);
+  border-radius: 50%; background: var(--sp-surface); border: 1px solid var(--border); color: var(--green-dark);
 }
 .beranda__badge {
   position: absolute; top: -4px; right: -4px; min-width: 16px; height: 16px; padding: 0 4px;
-  border-radius: 8px; background: #e0562f; color: #fff; font: 600 10px/16px inherit; text-align: center;
+  border-radius: 8px; background: var(--sp-danger); color: #fff; font: 600 10px/16px inherit; text-align: center;
 }
 
 /* pencarian */
 .beranda__search {
   display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 14px; margin-bottom: 14px;
-  background: #fff; border: 1px solid var(--border); border-radius: 21px; color: var(--muted);
+  background: var(--sp-surface); border: 1px solid var(--border); border-radius: 21px; color: var(--muted);
 }
 .beranda__search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: inherit; font-size: 13px; }
 
@@ -46,31 +46,31 @@
 .banner h2 { margin: 0 0 14px; font-size: 18px; line-height: 1.3; }
 .banner__btn {
   display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 18px;
-  background: #fff; color: var(--green-dark); font-size: 12px; font-weight: 600; text-decoration: none;
+  background: var(--sp-surface); color: var(--green-dark); font-size: 12px; font-weight: 600; text-decoration: none;
 }
 .banner__img { position: absolute; right: 0; top: 0; width: 46%; height: 100%; object-fit: cover; }
 .banner__dots { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); display: flex; gap: 5px; }
 .banner__dots button { width: 6px; height: 6px; padding: 0; border: 0; border-radius: 3px; background: rgba(255,255,255,.5); cursor: pointer; }
-.banner__dots .is-on { width: 16px; background: #f5c542; }
+.banner__dots .is-on { width: 16px; background: var(--sp-warning); }
 
 /* kategori */
 .cats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 6px; margin-bottom: 18px; }
 .cat { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0; border: 0; background: none; font: inherit; cursor: pointer; }
 .cat__icon {
   width: 54px; height: 54px; display: grid; place-items: center; overflow: hidden;
-  border-radius: 50%; background: #fff; border: 2px solid transparent; font-size: 26px;
+  border-radius: 50%; background: var(--sp-surface); border: 2px solid transparent; font-size: 26px;
 }
 .cat__icon img { width: 100%; height: 100%; object-fit: cover; }
-.cat__icon--more { background: #e7efdb; color: var(--green); }
-.cat__name { font-size: 10.5px; line-height: 1.25; text-align: center; color: #3b3b33; }
-.cat.is-active .cat__icon { border-color: var(--green); background: #e7efdb; }
+.cat__icon--more { background: var(--sp-page); color: var(--green); }
+.cat__name { font-size: 10.5px; line-height: 1.25; text-align: center; color: var(--sp-deep); }
+.cat.is-active .cat__icon { border-color: var(--green); background: var(--sp-page); }
 .cat.is-active .cat__name { font-weight: 700; color: var(--green); }
 
 /* flash sale */
 .flash-sale {
   margin: 0 -16px 18px;
   padding: 10px 0 11px;
-  background: #fff;
+  background: var(--sp-surface);
 }
 .flash-sale__head {
   display: flex;
@@ -83,7 +83,7 @@
   align-items: center;
   gap: 3px;
   margin: 0;
-  color: #d64234;
+  color: var(--sp-danger);
   font-size: 11px;
   font-weight: 800;
 }
@@ -93,8 +93,8 @@
   gap: 3px;
   padding: 3px 5px;
   border-radius: 4px;
-  background: #f0eee9;
-  color: #635d52;
+  background: var(--sp-page);
+  color: var(--sp-deep);
   font-size: 7px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -122,9 +122,9 @@
   flex: 0 0 112px;
   overflow: hidden;
   padding: 6px;
-  border: 1px solid #eee9e4;
+  border: 1px solid var(--sp-border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--sp-surface);
 }
 .flash-sale__product {
   width: 100%;
@@ -144,7 +144,7 @@
   place-items: center;
   overflow: hidden;
   border-radius: 5px;
-  background: #f3f5ec;
+  background: var(--sp-page);
   font-size: 36px;
 }
 .flash-sale__image > img {
@@ -158,7 +158,7 @@
   left: 4px;
   padding: 2px 4px;
   border-radius: 3px;
-  background: #dc4135;
+  background: var(--sp-danger);
   color: #fff;
   font-size: 7px;
   font-weight: 750;
@@ -167,7 +167,7 @@
   width: 100%;
   overflow: hidden;
   margin-top: 5px;
-  color: #34402f;
+  color: var(--sp-deep);
   font-size: 8px;
   font-weight: 650;
   text-overflow: ellipsis;
@@ -175,18 +175,18 @@
 }
 .flash-sale__unit {
   margin-top: 2px;
-  color: #899283;
+  color: var(--sp-muted);
   font-size: 6px;
 }
 .flash-sale__price {
   margin-top: 4px;
-  color: #e04536;
+  color: var(--sp-danger);
   font-size: 9px;
   font-weight: 750;
 }
 .flash-sale__original {
   margin-top: 1px;
-  color: #9da397;
+  color: var(--sp-muted);
   font-size: 6px;
 }
 .flash-sale__stock {
@@ -195,7 +195,7 @@
   overflow: hidden;
   margin-top: 5px;
   border-radius: 8px;
-  background: #f6e8e4;
+  background: var(--sp-danger-soft);
 }
 .flash-sale__stock > span {
   position: absolute;
@@ -206,14 +206,14 @@
   height: 100%;
   display: block;
   border-radius: inherit;
-  background: #edb6aa;
+  background: var(--sp-danger-soft);
 }
 .flash-sale__stock small {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  color: #973a2d;
+  color: var(--sp-danger);
   font-size: 5.5px;
   font-weight: 700;
 }
