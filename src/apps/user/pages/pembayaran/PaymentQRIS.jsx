@@ -1,26 +1,12 @@
-import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Check, ChevronLeft, Clock3, Copy, Share2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import QRCode from "qrcode";
+import { ChevronLeft, Clock3, Download, RefreshCw } from "lucide-react";
+import api from "../../../../shared/services/api";
 import "./Pembayaran.css";
 
 const WALLET_NAMES = ["GoPay", "OVO", "DANA", "ShopeePay", "BCA", "Mandiri"];
-const QR_SIZE = 25;
-
-function isFinderCell(row, column, startRow, startColumn) {
-  const localRow = row - startRow;
-  const localColumn = column - startColumn;
-  if (localRow < 0 || localRow > 6 || localColumn < 0 || localColumn > 6) return null;
-  return localRow === 0 || localRow === 6 || localColumn === 0 || localColumn === 6
-    || (localRow >= 2 && localRow <= 4 && localColumn >= 2 && localColumn <= 4);
-}
-
-function isDarkCell(row, column) {
-  for (const [startRow, startColumn] of [[0, 0], [0, QR_SIZE - 7], [QR_SIZE - 7, 0]]) {
-    const finderCell = isFinderCell(row, column, startRow, startColumn);
-    if (finderCell !== null) return finderCell;
-  }
-  return (row * 17 + column * 23 + row * column * 7) % 11 < 5;
-}
+const rupiah = (amount) => `Rp ${Number(amount || 0).toLocaleString("id-ID")}`;
 
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60).toString().padStart(2, "0");
@@ -28,23 +14,84 @@ function formatTime(seconds) {
   return `${minutes}:${remainder}`;
 }
 
-const QR_CELLS = Array.from({ length: QR_SIZE * QR_SIZE }, (_, index) => {
-  const row = Math.floor(index / QR_SIZE);
-  const column = index % QR_SIZE;
-  return isDarkCell(row, column);
-});
-
-const rupiah = (amount) => `Rp ${Number(amount).toLocaleString("id-ID")}`;
-
 export default function PaymentQRIS() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const [remainingSeconds, setRemainingSeconds] = useState(899);
-  const [notice, setNotice] = useState("");
-  const order = state?.order ?? null;
-  const [orderReference] = useState(() => state?.orderReference ?? order?.order_number ?? `SP-${Date.now().toString().slice(-10)}`);
-  const items = Array.isArray(order?.items) ? order.items : [];
-  const total = Number(order?.total ?? 0);
+  const [searchParams] = useSearchParams();
+  const queryOrderId = searchParams.get("orderId");
+  const initialOrder = state?.order ?? null;
+  const orderId = queryOrderId || initialOrder?.id || null;
+
+  const [order, setOrder] = useState(initialOrder);
+  const [payment, setPayment] = useState(initialOrder?.payment ?? null);
+  const [qrDataUrl, setQrDataUrl] = useState("");
+  const [remainingSeconds, setRemainingSeconds] = useState(0);
+  const [loading, setLoading] = useState(Boolean(orderId));
+  const [checking, setChecking] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!orderId) return undefined;
+    let active = true;
+
+    async function loadQris() {
+      try {
+        let currentOrder = initialOrder;
+        if (!currentOrder || !currentOrder.payment?.id) {
+          const orderRes = await api.get(`/orders/${orderId}`);
+          currentOrder = orderRes.data?.data ?? null;
+          if (!active) return;
+          setOrder(currentOrder);
+        }
+
+        const paymentId = currentOrder?.payment?.id;
+        if (!paymentId) {
+          throw new Error("Data pembayaran tidak ditemukan.");
+        }
+
+        let paymentData = currentOrder.payment;
+        if (paymentData.status === "paid") {
+          navigate(`/pembayaran/status?orderId=${currentOrder.id}`, {
+            replace: true,
+            state: { order: currentOrder, payment: paymentData },
+          });
+          return;
+        }
+
+        if (paymentData.status === "pending" && !paymentData.qr_string && !paymentData.qr_image_url) {
+          const qrisRes = await api.post(`/payments/${paymentId}/create-qris`);
+          paymentData = qrisRes.data?.data ?? paymentData;
+        }
+
+        if (!active) return;
+        setPayment(paymentData);
+        setError("");
+        if (paymentData.expired_at) {
+          const diff = Math.max(0, Math.floor((new Date(paymentData.expired_at).getTime() - Date.now()) / 1000));
+          setRemainingSeconds(diff);
+        }
+
+        if (paymentData.qr_string) {
+          const url = await QRCode.toDataURL(paymentData.qr_string, { width: 240, margin: 1 });
+          if (active) setQrDataUrl(url);
+        } else if (paymentData.qr_image_url) {
+          setQrDataUrl(paymentData.qr_image_url);
+        }
+      } catch (err) {
+        if (active) {
+          setError(err.response?.data?.error?.message || err.message || "QRIS belum dapat dibuat.");
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    Promise.resolve().then(() => {
+      if (active) loadQris();
+    });
+
+    return () => { active = false; };
+  }, [orderId, initialOrder, navigate]);
 
   useEffect(() => {
     if (remainingSeconds <= 0) return undefined;
@@ -54,52 +101,96 @@ export default function PaymentQRIS() {
     return () => window.clearInterval(timer);
   }, [remainingSeconds]);
 
-  function showUnavailableMessage() {
-    setNotice("QRIS demo belum terhubung ke payment gateway dan tidak dapat digunakan untuk membayar.");
-  }
+  const checkStatus = useCallback(async (manual = false) => {
+    if (!payment?.id) return;
+    try {
+      if (manual) setChecking(true);
+      const { data } = await api.get(`/payments/${payment.id}?sync=1`);
+      const updated = data?.data;
+      if (!updated) return;
+      setPayment(updated);
+      if (updated.is_paid || updated.status === "paid") {
+        navigate(`/pembayaran/status?orderId=${order?.id ?? updated.order_id}`, {
+          replace: true,
+          state: { order, payment: updated },
+        });
+      } else if (["expired", "cancelled", "failed"].includes(updated.status)) {
+        setError(`Pembayaran berstatus ${updated.status}. Silakan buat pesanan baru jika diperlukan.`);
+      } else if (manual) {
+        setError("Pembayaran masih menunggu konfirmasi dari penyedia QRIS.");
+      }
+    } catch (err) {
+      if (manual) {
+        setError(err.response?.data?.error?.message || "Gagal memeriksa status pembayaran.");
+      }
+    } finally {
+      if (manual) setChecking(false);
+    }
+  }, [payment, navigate, order]);
 
-  function showDemoStatus() {
-    navigate("/pembayaran/status", {
-      state: {
-        paymentData: state,
-        orderReference,
-        paidAt: new Date().toISOString(),
-        simulated: true,
-      },
-    });
+  useEffect(() => {
+    if (!payment?.id || payment.status !== "pending") return undefined;
+    const interval = window.setInterval(() => {
+      checkStatus(false);
+    }, 5000);
+    return () => window.clearInterval(interval);
+  }, [payment?.id, payment?.status, checkStatus]);
+
+  function downloadQr() {
+    if (!qrDataUrl) return;
+    const link = document.createElement("a");
+    link.href = qrDataUrl;
+    link.download = `QRIS-${order?.order_number || orderId}.png`;
+    link.click();
   }
 
   return (
     <main className="qris-payment">
       <header className="payment-flow__header">
-        <button type="button" aria-label="Kembali" onClick={() => navigate(-1)}>
+        <button type="button" aria-label="Kembali" onClick={() => navigate("/pesanan")}>
           <ChevronLeft size={17} />
         </button>
         <h1>Pembayaran QRIS</h1>
       </header>
 
-      {items.length ? (
+      {loading && <p className="payment-flow__empty">Menyiapkan kode QRIS resmi...</p>}
+
+      {!loading && (!orderId || !order) && (
+        <section className="payment-flow__empty">
+          <p>{error || "Data pembayaran tidak ditemukan. Silakan cek daftar pesanan Anda."}</p>
+          <button type="button" onClick={() => navigate("/pesanan")}>Lihat Pesanan Saya</button>
+        </section>
+      )}
+
+      {!loading && order && (
         <>
-          <div className={`qris-payment__timer${remainingSeconds === 0 ? " is-expired" : ""}`}>
+          <div className={`qris-payment__timer${remainingSeconds === 0 && payment?.expired_at ? " is-expired" : ""}`}>
             <Clock3 size={12} />
-            {remainingSeconds > 0
-              ? <>Selesaikan pembayaran dalam <strong>{formatTime(remainingSeconds)}</strong></>
-              : <strong>Waktu pembayaran telah habis</strong>}
+            {payment?.expired_at ? (
+              remainingSeconds > 0
+                ? <>Selesaikan pembayaran dalam <strong>{formatTime(remainingSeconds)}</strong></>
+                : <strong>Waktu pembayaran telah habis</strong>
+            ) : (
+              <span>Menunggu pembayaran untuk pesanan <strong>{order.order_number}</strong></span>
+            )}
           </div>
 
           <section className="qris-payment__card">
             <div className="qris-payment__merchant">
               <span><b>QRIS</b><small>STANDAR PEMBAYARAN NASIONAL</small></span>
-              <strong>SembakoPlus Fresh Cilacap</strong>
-              <small>ID Merchant: DEMO SEMBAKOPLUS • Detail Otomatis</small>
+              <strong>SembakoPlus</strong>
+              <small>No. Pesanan: {order.order_number} • {payment?.provider?.toUpperCase() || "MIDTRANS"}</small>
             </div>
 
             <div className="qris-payment__qr-wrap">
-              <div className="qris-payment__qr" role="img" aria-label="Kode QRIS demo, tidak dapat digunakan untuk membayar">
-                {QR_CELLS.map((dark, index) => <span className={dark ? "is-dark" : ""} key={index} />)}
-                <b>DEMO</b>
-              </div>
-              <p>Arahkan kamera ke QR Code di atas</p>
+              {qrDataUrl ? (
+                <img src={qrDataUrl} alt={`QRIS untuk pesanan ${order.order_number}`} className="qris-payment__qr-img" />
+              ) : (
+                <div className="qris-payment__qr-unavailable">
+                  <p>{error || "Kode QRIS belum tersedia dari payment gateway."}</p>
+                </div>
+              )}
+              <p>Pindai QR Code di atas dengan aplikasi e-wallet atau mobile banking</p>
             </div>
 
             <div className="qris-payment__wallets" aria-label="Aplikasi yang didukung">
@@ -108,36 +199,36 @@ export default function PaymentQRIS() {
 
             <div className="qris-payment__total">
               <span>Total Nominal Pembayaran</span>
-              <strong>{rupiah(total)}</strong>
+              <strong>{rupiah(payment?.gross_amount ?? order.total)}</strong>
             </div>
-            <div className="qris-payment__qr-actions">
-              <button type="button" onClick={showUnavailableMessage}><Copy size={10} /> Simpan Kode QR</button>
-              <button type="button" onClick={showUnavailableMessage}><Share2 size={10} /> Bagikan QR</button>
-            </div>
-            {notice && <p className="qris-payment__notice" role="status">{notice}</p>}
+
+            {qrDataUrl && (
+              <div className="qris-payment__qr-actions">
+                <button type="button" onClick={downloadQr}><Download size={10} /> Simpan QR</button>
+                <button type="button" onClick={() => checkStatus(true)} disabled={checking}>
+                  <RefreshCw size={10} /> {checking ? "Memeriksa..." : "Cek Status"}
+                </button>
+              </div>
+            )}
+
+            {error && <p className="qris-payment__notice" role="alert">{error}</p>}
           </section>
 
           <section className="qris-payment__instructions">
             <strong>Cara Pembayaran</strong>
             <ol>
               <li>Buka aplikasi e-wallet (GoPay/OVO/DANA) atau mobile banking.</li>
-              <li>Pilih menu QR lalu pindai QRIS resmi dari payment gateway.</li>
-              <li>Masukkan PIN dan pastikan nominal transaksi sudah benar.</li>
+              <li>Pilih menu QR lalu pindai QRIS resmi di atas.</li>
+              <li>Status pesanan berubah otomatis setelah konfirmasi dari server pembayaran.</li>
             </ol>
-            <p>Ini hanya pratinjau. QR tidak valid untuk transaksi.</p>
           </section>
 
           <footer className="payment-flow__footer">
-            <button type="button" disabled={!remainingSeconds} onClick={showDemoStatus}>
-              <Check size={12} /> Saya Sudah Membayar
+            <button type="button" disabled={checking || !payment?.id} onClick={() => checkStatus(true)}>
+              <RefreshCw size={12} /> {checking ? "Memeriksa Status..." : "Periksa Status Pembayaran"}
             </button>
           </footer>
         </>
-      ) : (
-        <section className="payment-flow__empty">
-          <p>Data pembayaran tidak ditemukan. Silakan kembali ke checkout.</p>
-          <button type="button" onClick={() => navigate("/keranjang")}>Kembali ke Keranjang</button>
-        </section>
       )}
     </main>
   );

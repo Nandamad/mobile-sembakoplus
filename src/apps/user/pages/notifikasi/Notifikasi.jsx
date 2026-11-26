@@ -1,73 +1,72 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, ChevronLeft } from "lucide-react";
+import api from "../../../../shared/services/api";
 import BottomNav from "../../components/BottomNav";
 import "./Notifikasi.css";
 
-const INITIAL_NOTIFICATIONS = [
-  {
-    id: 1,
-    category: "Pengantaran",
-    group: "transaksi",
-    title: "Pesanan Sedang Diantar Kurir",
-    message: "Kurir internal toko sedang otw ke alamatmu di Jl. Raya No. 33 Sidakaya. Siapkan uang pas Rp 69.500 ya buat bayar di tempat.",
-    time: "10 mnt lalu",
-    unread: true,
-  },
-  {
-    id: 2,
-    category: "Batas Jam",
-    group: "transaksi",
-    title: "Pesananmu bakal dikirim besok pagi",
-    message: "Pesanan order lewat jam 17.00, lain dari sayuran segar jadi tidak dikirim karena sudah sore. Besoknya akan dikirim pada pagi jam 08.00 WIB.",
-    time: "11:15 WIB",
-    unread: true,
-  },
-  {
-    id: 3,
-    category: "Status Pesanan",
-    group: "transaksi",
-    title: "Pesanan #SP-20261117-02 Selesai",
-    message: "Terima kasih sudah belanja sayur dan lauk segar di Toko BISMA. Semoga pesanan hari ini diterima dengan baik.",
-    time: "Kemarin",
-    unread: true,
-  },
-  {
-    id: 4,
-    category: "Promo Sore",
-    group: "info",
-    title: "Diskon sore s.d. 30% bumbu & ayam",
-    message: "Cicil hemat, bumbu dapur, dan paha ayam turun harga sore ini di TP Gemilang! Stok terbatas. Promo berlaku sampai jam 18.00 WIB.",
-    time: "2 hari lalu",
-    unread: false,
-  },
-  {
-    id: 5,
-    category: "Info Pengiriman",
-    group: "info",
-    title: "Slot belanja subuh jam 05.30 WIB siap",
-    message: "Kini area Cilacap Tengah & Selatan bisa terima belanja subuh. Sayur baru dipetik langsung diantar sebelum jam 7 pagi.",
-    time: "3 hari lalu",
-    unread: false,
-  },
-];
-
 const FILTERS = [
   { id: "semua", label: "Semua" },
-  { id: "transaksi", label: "Transaksi" },
-  { id: "info", label: "Promo & Info" },
+  { id: "unread", label: "Belum Dibaca" },
 ];
+
+function formatTime(iso) {
+  if (!iso) return "";
+  return new Date(iso).toLocaleString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 export default function Notifikasi() {
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState([]);
   const [filter, setFilter] = useState("semua");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const unreadCount = notifications.filter((item) => item.unread).length;
-  const filtered = notifications.filter((item) => filter === "semua" || item.group === filter);
+  useEffect(() => {
+    let active = true;
+    api.get("/notifications")
+      .then(({ data }) => {
+        if (active) {
+          setNotifications(data?.data ?? []);
+          setError("");
+        }
+      })
+      .catch((err) => {
+        if (active) setError(err.response?.data?.error?.message || "Gagal memuat notifikasi.");
+      })
+      .finally(() => active && setLoading(false));
+    return () => { active = false; };
+  }, []);
 
-  function markAllRead() {
-    setNotifications((items) => items.map((item) => ({ ...item, unread: false })));
+  const unreadCount = notifications.filter((item) => !item.read_at).length;
+  const filtered = filter === "unread"
+    ? notifications.filter((item) => !item.read_at)
+    : notifications;
+
+  async function markOneRead(item) {
+    if (item.read_at) return;
+    try {
+      await api.post(`/notifications/${item.id}/read`);
+      setNotifications((items) => items.map((entry) => entry.id === item.id ? { ...entry, read_at: new Date().toISOString() } : entry));
+    } catch (err) {
+      setError(err.response?.data?.error?.message || "Gagal menandai notifikasi dibaca.");
+    }
+  }
+
+  async function markAllRead() {
+    try {
+      setError("");
+      await api.post("/notifications/read-all");
+      const now = new Date().toISOString();
+      setNotifications((items) => items.map((item) => ({ ...item, read_at: item.read_at || now })));
+    } catch (err) {
+      setError(err.response?.data?.error?.message || "Gagal menandai semua notifikasi.");
+    }
   }
 
   return (
@@ -91,9 +90,7 @@ export default function Notifikasi() {
       <div className="notifications__content">
         <nav className="notifications__filters" aria-label="Filter notifikasi">
           {FILTERS.map(({ id, label }) => {
-            const count = id === "semua"
-              ? notifications.length
-              : notifications.filter((item) => item.group === id).length;
+            const count = id === "semua" ? notifications.length : unreadCount;
             return (
               <button
                 type="button"
@@ -108,35 +105,39 @@ export default function Notifikasi() {
           })}
         </nav>
 
-        <section className="notifications__list" aria-label="Daftar notifikasi">
-          {filtered.map((item) => (
-            <article
-              className={`notifications__card${item.unread ? " is-unread" : ""}`}
-              key={item.id}
-            >
-              <div className="notifications__meta">
-                <span className={`notifications__category notifications__category--${item.group}`}>
-                  {item.category}
-                </span>
-                <span>{item.time}</span>
-                {item.unread && <i aria-label="Belum dibaca" />}
+        {error && <p className="notifications__empty" role="alert">{error}</p>}
+        {loading && <p className="notifications__empty">Memuat notifikasi...</p>}
+
+        {!loading && !error && (
+          <section className="notifications__list" aria-label="Daftar notifikasi">
+            {filtered.map((item) => {
+              const isUnread = !item.read_at;
+              return (
+                <article
+                  className={`notifications__card${isUnread ? " is-unread" : ""}`}
+                  key={item.id}
+                  onClick={() => markOneRead(item)}
+                >
+                  <div className="notifications__meta">
+                    <span className="notifications__category notifications__category--transaksi">
+                      {item.type || "Info"}
+                    </span>
+                    <span>{formatTime(item.created_at)}</span>
+                    {isUnread && <i aria-label="Belum dibaca" />}
+                  </div>
+                  <h2>{item.title}</h2>
+                  <p>{item.message}</p>
+                </article>
+              );
+            })}
+            {!filtered.length && (
+              <div className="notifications__empty">
+                <Bell size={20} />
+                <p>Belum ada notifikasi di kategori ini.</p>
               </div>
-              <h2>{item.title}</h2>
-              <p>{item.message}</p>
-              {item.id === 1 && (
-                <button type="button" onClick={() => navigate("/pesanan/lacak")}>
-                  Lacak Posisi Kurir <ChevronLeft size={10} />
-                </button>
-              )}
-            </article>
-          ))}
-          {!filtered.length && (
-            <div className="notifications__empty">
-              <Bell size={20} />
-              <p>Belum ada notifikasi di kategori ini.</p>
-            </div>
-          )}
-        </section>
+            )}
+          </section>
+        )}
       </div>
 
       <BottomNav />

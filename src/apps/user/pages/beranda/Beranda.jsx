@@ -5,6 +5,7 @@ import { Search, Bell, ShoppingCart, LayoutGrid, ArrowRight, Clock3, Zap } from 
 import ProductCard from "../../components/ProductCard";
 import BottomNav from "../../components/BottomNav";
 import { addCartItem, CART_UPDATED_EVENT, getCartCount, loadCart } from "../keranjang/cartData";
+import { mapApiProduct } from "../../../../shared/utils/productMapper";
 import "./Beranda.css";
 
 const VISIBLE_CATEGORIES = 7; // sisanya muncul saat "Lainnya" ditekan
@@ -71,6 +72,7 @@ function FlashSaleCard({ product, onOpen, onAdd }) {
 }
 
 function Banners({ items }) {
+  const navigate = useNavigate();
   const [i, setI] = useState(0);
 
   useEffect(() => {
@@ -82,15 +84,27 @@ function Banners({ items }) {
   const b = items[i] ?? items[0];
   if (!b) return null;
 
+  function openBanner() {
+    if (b.target_type === "product" && b.target_id) {
+      navigate(`/produk/${b.target_id}`);
+    } else if (b.target_type === "internal_path" && b.target_path?.startsWith("/")) {
+      navigate(b.target_path);
+    } else if (b.link?.startsWith("/")) {
+      navigate(b.link);
+    }
+  }
+
   return (
     <section className="banner" style={{ background: b.bg || "#2e6b14" }}>
       <div className="banner__text">
         <h2>{b.title}</h2>
-        <a href={b.link} className="banner__btn">
-          {b.button_text} <ArrowRight size={14} />
-        </a>
+        {(b.target_type && b.target_type !== "none") || b.link ? (
+          <button type="button" className="banner__btn" onClick={openBanner}>
+            {b.button_text || "Lihat Detail"} <ArrowRight size={14} />
+          </button>
+        ) : null}
       </div>
-      {b.image && <img src={b.image} alt="" className="banner__img" />}
+      {b.image && <img src={b.image} alt={b.alt_text || b.title || ""} className="banner__img" />}
       <div className="banner__dots">
         {items.map((x, n) => (
           <button
@@ -179,33 +193,7 @@ export default function Beranda() {
             ...category,
             icon: category.icon ?? "🛒",
           })),
-          products: products.map((product) => {
-            const variants = (product.variants ?? []).map((variant) => {
-              const discount = variant.discount;
-              const price = Number(variant.price);
-              const originalPrice = discount?.type === "percentage"
-                ? Math.round(price / (1 - Number(discount.value) / 100))
-                : discount?.type === "fixed"
-                  ? price + Number(discount.value)
-                  : price;
-              return {
-                ...variant,
-                label: variant.name,
-                original_price: originalPrice,
-              };
-            });
-            const selected = variants.find((variant) => variant.is_default) ?? variants[0];
-            return {
-              ...product,
-              image: product.image_url,
-              category: product.category_id,
-              variants,
-              unit: selected?.label ?? "",
-              price: selected?.price ?? 0,
-              original_price: selected?.original_price ?? selected?.price ?? 0,
-              featured: false,
-            };
-          }),
+          products: products.map(mapApiProduct),
         });
       })
       .catch((error) => {
@@ -319,20 +307,18 @@ export default function Beranda() {
           <section>
             <div className="beranda__head">
               <h2 className="beranda__title">Pilihan Terbaik</h2>
-              <a href="/pasar">Lihat Semua</a>
+              <Link to="/promo">Lihat Promo</Link>
             </div>
-            <div className="row">{data.products.filter((p) => p.featured).map(card)}</div>
+            <div className="row">{data.products.slice(0, 6).map(card)}</div>
           </section>
 
           <section>
             <div className="beranda__head">
               <h2 className="beranda__title">Kebutuhan Pokok Dapur</h2>
-              <a href="/pasar">Lihat Semua</a>
+              <button type="button" onClick={() => setActive(data.categories[0]?.id ?? null)}>Lihat Semua</button>
             </div>
             <div className="row">
-              {data.products
-                .filter((p) => ["sembako", "minyak", "telur"].includes(p.category))
-                .map(card)}
+              {data.products.map(card)}
             </div>
           </section>
         </>

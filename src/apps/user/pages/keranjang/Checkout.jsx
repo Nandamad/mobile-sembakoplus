@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Clock3, MapPin, PackageCheck, Wallet } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock3, Coins, MapPin, PackageCheck, Ticket, Wallet } from "lucide-react";
 import api from "../../../../shared/services/api";
 import { getAddresses } from "../profil/addressData";
 import { getPrimaryPaymentMethod } from "../profil/paymentMethodData";
@@ -8,6 +8,13 @@ import { loadCart } from "./cartData";
 import "./Checkout.css";
 
 const rupiah = (amount) => `Rp ${Number(amount || 0).toLocaleString("id-ID")}`;
+
+function createIdempotencyKey() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `sp-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
 
 function displayAddress(address) {
   return address ? {
@@ -25,24 +32,49 @@ export default function Checkout() {
   const [schedules, setSchedules] = useState([]);
   const [schedule, setSchedule] = useState(null);
   const [showAddresses, setShowAddresses] = useState(false);
-  const [paymentMethod] = useState(getPrimaryPaymentMethod);
+  const [paymentMethod, setPaymentMethod] = useState(getPrimaryPaymentMethod);
+  const [voucherCodeInput, setVoucherCodeInput] = useState("");
+  const [appliedVoucher, setAppliedVoucher] = useState({ code: "", id: null });
+  const [myVouchers, setMyVouchers] = useState([]);
+  const [wallet, setWallet] = useState(null);
+  const [useCoins, setUseCoins] = useState(false);
+  const [coinsToRedeem, setCoinsToRedeem] = useState(0);
   const [preview, setPreview] = useState(null);
+  const [previewError, setPreviewError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [idempotencyKey, setIdempotencyKey] = useState(createIdempotencyKey);
+
+  const canPreview = Boolean(address?.id && schedule?.id && items.length);
+  const activePreview = canPreview ? preview : null;
+
+  function refreshIdempotencyKey() {
+    setIdempotencyKey(createIdempotencyKey());
+  }
 
   useEffect(() => {
     let active = true;
-    Promise.all([loadCart(), getAddresses(), api.get("/delivery-schedules/available")])
-      .then(([cartItems, userAddresses, scheduleResponse]) => {
+    Promise.all([
+      loadCart(),
+      getAddresses(),
+      api.get("/delivery-schedules/available"),
+      api.get("/vouchers").catch(() => ({ data: { data: { my_vouchers: [] } } })),
+      api.get("/wallet").catch(() => ({ data: { data: null } })),
+    ])
+      .then(([cartItems, userAddresses, scheduleResponse, voucherResponse, walletResponse]) => {
         if (!active) return;
         const nextAddresses = userAddresses.map(displayAddress);
         const nextSchedules = scheduleResponse.data?.data ?? [];
+        const availableVouchers = (voucherResponse.data?.data?.my_vouchers ?? [])
+          .filter((item) => item.status === "available" && item.voucher);
         setItems(cartItems);
         setAddresses(nextAddresses);
         setAddress(nextAddresses.find((item) => item.primary) ?? nextAddresses[0] ?? null);
         setSchedules(nextSchedules);
         setSchedule(nextSchedules[0] ?? null);
+        setMyVouchers(availableVouchers);
+        setWallet(walletResponse.data?.data ?? null);
       })
       .catch((error) => {
         if (active) setMessage(error.response?.data?.error?.message || "Data checkout gagal dimuat.");
@@ -52,21 +84,67 @@ export default function Checkout() {
   }, []);
 
   useEffect(() => {
-    if (!address?.id || !schedule?.id) return undefined;
+    if (!canPreview) return undefined;
     let active = true;
     api.post("/checkout/preview", {
       address_id: address.id,
       delivery_schedule_id: schedule.id,
+      ...(appliedVoucher.code ? { voucher_code: appliedVoucher.code } : {}),
+      ...(appliedVoucher.id ? { voucher_id: appliedVoucher.id } : {}),
+      coins_to_redeem: useCoins ? Number(coinsToRedeem || 0) : 0,
     })
-      .then(({ data }) => active && setPreview(data.data))
-      .catch((error) => active && setMessage(error.response?.data?.error?.message || "Perhitungan checkout gagal."));
+      .then(({ data }) => {
+        if (active) {
+          setPreview(data.data);
+          setPreviewError("");
+        }
+      })
+      .catch((error) => {
+        if (active) {
+          setPreview(null);
+          setPreviewError(error.response?.data?.error?.message || "Perhitungan checkout gagal.");
+        }
+      });
     return () => { active = false; };
-  }, [address, schedule]);
+  }, [canPreview, address?.id, schedule?.id, appliedVoucher.code, appliedVoucher.id, useCoins, coinsToRedeem]);
+
+  function applyVoucherCode(event) {
+    event.preventDefault();
+    const trimmed = voucherCodeInput.trim().toUpperCase();
+    setMessage("");
+    setAppliedVoucher({ code: trimmed, id: null });
+    refreshIdempotencyKey();
+  }
+
+  function selectCustomerVoucher(voucher) {
+    setMessage("");
+    refreshIdempotencyKey();
+    if (appliedVoucher.id === voucher.id) {
+      setAppliedVoucher({ code: "", id: null });
+      setVoucherCodeInput("");
+      return;
+    }
+    setAppliedVoucher({ code: voucher.code || "", id: voucher.id });
+    setVoucherCodeInput(voucher.code || voucher.name);
+  }
+
+  function toggleCoins(checked) {
+    setUseCoins(checked);
+    refreshIdempotencyKey();
+    if (!checked) {
+      setCoinsToRedeem(0);
+      return;
+    }
+    const maxBalance = Number(wallet?.balance ?? 0);
+    setCoinsToRedeem(maxBalance > 0 ? Math.min(maxBalance, Number(wallet?.balance ?? 0)) : 0);
+  }
 
   async function handleCheckout() {
     if (!items.length) return setMessage("Keranjang kosong. Tambahkan produk sebelum checkout.");
     if (!address) return setMessage("Tambahkan alamat pengiriman terlebih dahulu.");
     if (!schedule) return setMessage("Pilih jadwal pengiriman terlebih dahulu.");
+    if (previewError) return setMessage(previewError);
+
     try {
       setSubmitting(true);
       setMessage("");
@@ -74,13 +152,28 @@ export default function Checkout() {
         address_id: address.id,
         delivery_schedule_id: schedule.id,
         payment_method: paymentMethod,
+        ...(appliedVoucher.code ? { voucher_code: appliedVoucher.code } : {}),
+        ...(appliedVoucher.id ? { voucher_id: appliedVoucher.id } : {}),
+        coins_to_redeem: useCoins ? Number(coinsToRedeem || 0) : 0,
+      }, {
+        headers: { "Idempotency-Key": idempotencyKey },
       });
       const order = data.data;
-      navigate(paymentMethod === "qris" ? "/pembayaran/qris" : "/pesanan", {
-        state: { order, orderReference: order.order_number },
-      });
+      await loadCart().catch(() => {});
+      if (paymentMethod === "qris") {
+        navigate(`/pembayaran/qris?orderId=${order.id}`, {
+          state: { order, orderReference: order.order_number },
+        });
+      } else {
+        navigate(`/pesanan/lacak?orderId=${order.id}`, {
+          state: { order, justCreated: true },
+        });
+      }
     } catch (error) {
       setMessage(error.response?.data?.error?.message || "Pesanan gagal dibuat.");
+      if (error.response?.status === 409) {
+        refreshIdempotencyKey();
+      }
     } finally {
       setSubmitting(false);
     }
@@ -108,7 +201,7 @@ export default function Checkout() {
           <button type="button" onClick={() => setShowAddresses((value) => !value)}>Ganti</button>
           {showAddresses && <div className="checkout__address-options">
             {addresses.map((option) => (
-              <button type="button" key={option.id} className={option.id === address.id ? "is-selected" : ""} onClick={() => { setAddress(option); setShowAddresses(false); }}>
+              <button type="button" key={option.id} className={option.id === address.id ? "is-selected" : ""} onClick={() => { setAddress(option); setShowAddresses(false); refreshIdempotencyKey(); }}>
                 <strong>{option.label}</strong><span>{option.address}</span>
               </button>
             ))}
@@ -130,10 +223,10 @@ export default function Checkout() {
       </section>
 
       <section className="checkout__section checkout__delivery">
-        <header><strong><Clock3 size={12} /> Waktu Pengiriman</strong><span>{preview ? rupiah(preview.shipping_cost) : "-"}</span></header>
+        <header><strong><Clock3 size={12} /> Jadwal Pengiriman</strong><span>{activePreview ? rupiah(activePreview.shipping_cost) : "-"}</span></header>
         <div className="checkout__slots">
           {schedules.map((option) => (
-            <button type="button" key={option.id} className={schedule?.id === option.id ? "is-selected" : ""} aria-pressed={schedule?.id === option.id} onClick={() => setSchedule(option)}>
+            <button type="button" key={option.id} className={schedule?.id === option.id ? "is-selected" : ""} aria-pressed={schedule?.id === option.id} onClick={() => { setSchedule(option); refreshIdempotencyKey(); }}>
               <i /><span><strong>{option.delivery_date}</strong><small>{option.start_time} - {option.end_time} WIB</small></span>
             </button>
           ))}
@@ -141,23 +234,93 @@ export default function Checkout() {
         {!schedules.length && <p>Jadwal pengiriman belum tersedia.</p>}
       </section>
 
-      <button type="button" className="checkout__section checkout__payment" onClick={() => navigate("/profil/metode-pembayaran")}>
-        <span><Wallet size={13} /> Metode Pembayaran</span><strong>{paymentLabel} <ChevronRight size={11} /></strong>
-      </button>
+      <section className="checkout__section checkout__promo">
+        <header><strong><Ticket size={12} /> Voucher &amp; Koin</strong></header>
+        <form className="checkout__voucher-form" onSubmit={applyVoucherCode}>
+          <input
+            type="text"
+            value={voucherCodeInput}
+            placeholder="Masukkan kode voucher"
+            onChange={(event) => setVoucherCodeInput(event.target.value)}
+          />
+          <button type="submit">Terapkan</button>
+          {(appliedVoucher.code || appliedVoucher.id) && (
+            <button type="button" onClick={() => { setAppliedVoucher({ code: "", id: null }); setVoucherCodeInput(""); refreshIdempotencyKey(); }}>
+              Hapus
+            </button>
+          )}
+        </form>
+        {myVouchers.length > 0 && (
+          <div className="checkout__voucher-chips">
+            {myVouchers.map(({ voucher }) => (
+              <button
+                type="button"
+                key={voucher.id}
+                className={appliedVoucher.id === voucher.id ? "is-selected" : ""}
+                onClick={() => selectCustomerVoucher(voucher)}
+              >
+                {voucher.name}
+              </button>
+            ))}
+          </div>
+        )}
+        {wallet && Number(wallet.balance) > 0 && wallet.is_enabled && (
+          <div className="checkout__coins-row">
+            <label>
+              <input
+                type="checkbox"
+                checked={useCoins}
+                onChange={(event) => toggleCoins(event.target.checked)}
+              />
+              <span><Coins size={12} /> Tukar Koin (Saldo: {wallet.balance} • 1 koin = {rupiah(wallet.coin_value)})</span>
+            </label>
+            {useCoins && (
+              <input
+                type="number"
+                min={wallet.minimum_redemption_coins || 1}
+                max={wallet.balance}
+                value={coinsToRedeem}
+                onChange={(event) => {
+                  setCoinsToRedeem(Math.max(0, Math.min(wallet.balance, Number(event.target.value) || 0)));
+                  refreshIdempotencyKey();
+                }}
+              />
+            )}
+          </div>
+        )}
+      </section>
+
+      <section className="checkout__section checkout__payment-methods">
+        <div className="checkout__payment-head">
+          <span><Wallet size={13} /> Metode Pembayaran</span>
+          <button type="button" onClick={() => navigate("/profil/metode-pembayaran")}>
+            {paymentLabel} <ChevronRight size={11} />
+          </button>
+        </div>
+        <div className="checkout__payment-toggle">
+          <button type="button" className={paymentMethod === "qris" ? "is-selected" : ""} onClick={() => { setPaymentMethod("qris"); refreshIdempotencyKey(); }}>QRIS</button>
+          <button type="button" className={paymentMethod === "cod" ? "is-selected" : ""} onClick={() => { setPaymentMethod("cod"); refreshIdempotencyKey(); }}>COD Tunai</button>
+        </div>
+      </section>
 
       <section className="checkout__section checkout__bill">
         <h2>Rincian Tagihan</h2>
-        <div><span>Subtotal Belanja</span><strong>{rupiah(preview?.subtotal)}</strong></div>
-        <div><span>Diskon Produk</span><strong className="checkout__discount">-{rupiah(preview?.product_discount_total)}</strong></div>
-        <div><span>Diskon Voucher</span><strong className="checkout__discount">-{rupiah(preview?.voucher_discount_total)}</strong></div>
-        <div><span>Total Ongkir</span><strong>{rupiah(preview?.shipping_cost)}</strong></div>
-        <div className="checkout__bill-total"><span>Total Tagihan</span><strong>{rupiah(preview?.total)}</strong></div>
+        <div><span>Subtotal Belanja</span><strong>{rupiah(activePreview?.subtotal)}</strong></div>
+        <div><span>Diskon Produk</span><strong className="checkout__discount">-{rupiah(activePreview?.product_discount_total)}</strong></div>
+        <div><span>Diskon Voucher</span><strong className="checkout__discount">-{rupiah(activePreview?.voucher_discount_total)}</strong></div>
+        <div><span>Potongan Koin</span><strong className="checkout__discount">-{rupiah(activePreview?.coin_discount_total)}</strong></div>
+        <div><span>Ongkos Kirim</span><strong>{rupiah(activePreview?.shipping_cost)}</strong></div>
+        <div><span>Subsidi Ongkir</span><strong className="checkout__free">-{rupiah(activePreview?.shipping_discount)}</strong></div>
+        <div className="checkout__bill-total"><span>Total Tagihan</span><strong>{rupiah(activePreview?.total)}</strong></div>
       </section>
 
-      {message && <p className="checkout__message" role="alert">{message}</p>}
+      {(previewError || message) && <p className="checkout__message" role="alert">{previewError || message}</p>}
       <footer className="checkout__footer">
-        <div><span>Total Pembayaran</span><strong>{rupiah(preview?.total)}</strong></div>
-        <button type="button" disabled={submitting || loading} onClick={handleCheckout}>{submitting ? "Memproses..." : paymentMethod === "cod" ? "Buat Pesanan (COD)" : "Buat Pesanan (QRIS)"}<PackageCheck size={12} /></button>
+        <div><span>Total Pembayaran</span><strong>{rupiah(activePreview?.total)}</strong></div>
+        <button type="button" disabled={submitting || loading || Boolean(previewError)} onClick={handleCheckout}>
+          {submitting ? "Memproses..." : paymentMethod === "cod" ? "Buat Pesanan (COD)" : "Buat Pesanan (QRIS)"}
+          <PackageCheck size={12} />
+        </button>
       </footer>
     </main>
   );

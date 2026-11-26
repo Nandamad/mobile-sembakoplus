@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../../../shared/services/api";
+import { mapApiProduct } from "../../../../shared/utils/productMapper";
 import { Bell, Minus, Plus, ShoppingCart } from "lucide-react";
 import BottomNav from "../../components/BottomNav";
 import {
@@ -9,37 +10,17 @@ import {
   changeCartQuantity,
   getCartCount,
   getCartItems,
+  loadCart,
 } from "../keranjang/cartData";
 import "./Promo.css";
 
-const DEMO_PROMOS = [
-  { id: 7, name: "Paha Ayam Broiler", category: "Ayam & Daging", unit: "500 gram", price: 19500, original_price: 24500, icon: "🍗", sold: 38, stock: 50 },
-  { id: 8, name: "Fillet Ikan Salmon", category: "Ikan Laut", unit: "250 gram", price: 26000, original_price: 32000, icon: "🐟", sold: 12, stock: 30 },
-  { id: 1, name: "Bayam Hijau Segar", category: "Sayuran", unit: "250 gram", price: 3500, original_price: 4500, icon: "🥬", sold: 46, stock: 50 },
-  { id: 13, name: "Daging Sapi Rawon", category: "Daging", unit: "500 gram", price: 64000, original_price: 70000, icon: "🥩", sold: 8, stock: 15 },
-  { id: 2, name: "Brokoli Hijau Segar", category: "Sayuran", unit: "500 gram", price: 12000, original_price: 15000, icon: "🥦", sold: 22, stock: 35 },
-  { id: 14, name: "Udang Vaname Segar", category: "Seafood", unit: "250 gram", price: 28000, original_price: 35000, icon: "🦐", sold: 16, stock: 30 },
-  { id: 9, name: "Cabai Merah Besar", category: "Bumbu Dapur", unit: "250 gram", price: 11500, original_price: 15000, icon: "🌶️", sold: 31, stock: 40 },
-  { id: 10, name: "Minyak Bimoli 2L", category: "Minyak Goreng", unit: "2 liter", price: 34500, original_price: 39000, icon: "🛢️", sold: 19, stock: 30 },
-];
-
-const rupiah = (amount) => `Rp ${Number(amount).toLocaleString("id-ID")}`;
-
-function getPromoList(payload) {
-  const promos = Array.isArray(payload) ? payload : payload?.data;
-  if (!Array.isArray(promos)) {
-    throw new TypeError("Format data promo dari server tidak valid.");
-  }
-  return promos;
-}
+const rupiah = (amount) => `Rp ${Number(amount || 0).toLocaleString("id-ID")}`;
 
 function PromoProduct({ product, quantity, onChangeQuantity, onOpen }) {
   const discount = product.original_price > product.price
     ? Math.round((1 - product.price / product.original_price) * 100)
     : 0;
-  const sold = Number(product.sold) || 0;
   const stock = Number(product.stock) || 0;
-  const salesProgress = stock > 0 ? Math.min(100, (sold / stock) * 100) : 0;
 
   return (
     <article className="promo__card">
@@ -49,34 +30,25 @@ function PromoProduct({ product, quantity, onChangeQuantity, onOpen }) {
         onClick={() => onOpen(product)}
         aria-label={`Lihat ${product.name}`}
       >
-        <span className="promo__discount">-{discount}%</span>
+        {discount > 0 && <span className="promo__discount">-{discount}%</span>}
         <span className="promo__image">
           {product.image
             ? <img src={product.image} alt={product.name} />
-            : <span aria-hidden="true">{product.icon || "🛒"}</span>}
+            : <span aria-hidden="true">🛒</span>}
         </span>
-        <span className="promo__category">{product.category}</span>
+        <span className="promo__category">{product.categoryName || "Promo"}</span>
         <strong className="promo__name">{product.name}</strong>
         <span className="promo__unit">{product.unit}</span>
         <span className="promo__price">{rupiah(product.price)}</span>
-        <s className="promo__original">{rupiah(product.original_price)}</s>
+        {product.original_price > product.price && (
+          <s className="promo__original">{rupiah(product.original_price)}</s>
+        )}
       </button>
 
       {stock > 0 && (
         <div className="promo__sales">
-          <div
-            className="promo__sales-bar"
-            role="progressbar"
-            aria-label={`Terjual ${sold} dari stok ${stock}`}
-            aria-valuemin={0}
-            aria-valuemax={stock}
-            aria-valuenow={Math.min(sold, stock)}
-          >
-            <span style={{ width: `${salesProgress}%` }} />
-          </div>
           <div className="promo__sales-label">
-            <strong>Terjual: {sold}</strong>
-            <span>Stok: {stock}</span>
+            <span>Stok tersedia: {stock}</span>
           </div>
         </div>
       )}
@@ -87,7 +59,7 @@ function PromoProduct({ product, quantity, onChangeQuantity, onOpen }) {
             <button
               type="button"
               aria-label={`Kurangi ${product.name}`}
-              onClick={() => onChangeQuantity(product.id, -1)}
+              onClick={() => onChangeQuantity(product, -1)}
             >
               <Minus size={12} />
             </button>
@@ -95,7 +67,7 @@ function PromoProduct({ product, quantity, onChangeQuantity, onOpen }) {
             <button
               type="button"
               aria-label={`Tambah ${product.name}`}
-              onClick={() => onChangeQuantity(product.id, 1)}
+              onClick={() => onChangeQuantity(product, 1)}
             >
               <Plus size={12} />
             </button>
@@ -104,10 +76,11 @@ function PromoProduct({ product, quantity, onChangeQuantity, onOpen }) {
           <button
             type="button"
             className="promo__add"
-            onClick={() => onChangeQuantity(product.id, 1)}
+            disabled={stock < 1}
+            onClick={() => onChangeQuantity(product, 1)}
           >
             <Plus size={12} />
-            Tambah
+            {stock < 1 ? "Habis" : "Tambah"}
           </button>
         )}
       </div>
@@ -117,58 +90,66 @@ function PromoProduct({ product, quantity, onChangeQuantity, onOpen }) {
 
 export default function Promo() {
   const navigate = useNavigate();
-  const [promos, setPromos] = useState(DEMO_PROMOS);
+  const [promos, setPromos] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
-  const [quantities, setQuantities] = useState(() => Object.fromEntries(
-    getCartItems().map((item) => [item.productId, item.quantity])
-  ));
+  const [actionError, setActionError] = useState("");
+  const [cartItems, setCartItems] = useState(getCartItems);
   const [cartCount, setCartCount] = useState(getCartCount);
 
   useEffect(() => {
     let active = true;
-
-    api.get("/api/promos")
+    api.get("/products", { params: { discounted: 1, per_page: 50 } })
       .then(({ data }) => {
-        const items = getPromoList(data);
-        if (active) {
-          setPromos(items);
-          setLoadError("");
-        }
+        if (!active) return;
+        const list = (data?.data ?? []).map(mapApiProduct).filter((item) => item?.hasDiscount);
+        setPromos(list);
+        setLoadError("");
       })
       .catch((error) => {
         if (active) {
-          console.error("Gagal memuat promo dari API:", error);
-          setLoadError("Promo contoh ditampilkan. Data promo admin belum dapat dimuat.");
+          setLoadError(error.response?.data?.error?.message || "Gagal memuat produk diskon dari server.");
         }
-      });
-
+      })
+      .finally(() => active && setLoading(false));
     return () => { active = false; };
   }, []);
 
   useEffect(() => {
-    const updateCartCount = () => setCartCount(getCartCount());
-    window.addEventListener(CART_UPDATED_EVENT, updateCartCount);
-    return () => window.removeEventListener(CART_UPDATED_EVENT, updateCartCount);
+    const syncCart = () => {
+      setCartItems(getCartItems());
+      setCartCount(getCartCount());
+    };
+    window.addEventListener(CART_UPDATED_EVENT, syncCart);
+    if (localStorage.getItem("sembakoplus.auth.token")) {
+      loadCart().catch(() => {});
+    }
+    return () => window.removeEventListener(CART_UPDATED_EVENT, syncCart);
   }, []);
 
-  function changeQuantity(id, amount) {
-    const product = promos.find((item) => item.id === id);
-    if (product) {
-      if (amount > 0) {
-        addCartItem(product, product);
-      } else {
-        changeCartQuantity(`${product.id}::${product.unit}`, amount);
-      }
-    }
+  async function changeQuantity(product, amount) {
+    const defaultVariant = product.variants?.find((variant) => variant.is_default) ?? product.variants?.[0];
+    if (!defaultVariant?.id) return;
 
-    setQuantities((current) => {
-      const next = Math.max(0, (current[id] || 0) + amount);
-      return { ...current, [id]: next };
-    });
+    try {
+      setActionError("");
+      if (amount > 0) {
+        await addCartItem(product, defaultVariant, amount);
+      } else {
+        const existing = cartItems.find((item) => item.productVariantId === defaultVariant.id);
+        if (existing) {
+          await changeCartQuantity(existing.id, -1);
+        }
+      }
+    } catch (error) {
+      setActionError(error.response?.data?.error?.message || error.message || "Keranjang gagal diperbarui.");
+    }
   }
 
-  function openProduct(product) {
-    navigate(`/produk/${product.id}`, { state: { product } });
+  function quantityFor(product) {
+    const defaultVariant = product.variants?.find((variant) => variant.is_default) ?? product.variants?.[0];
+    if (!defaultVariant?.id) return 0;
+    return cartItems.find((item) => item.productVariantId === defaultVariant.id)?.quantity ?? 0;
   }
 
   return (
@@ -177,7 +158,7 @@ export default function Promo() {
         <img src="/logo.svg" alt="" className="promo__logo" />
         <div className="promo__brand">
           <strong>SembakoPlus</strong>
-          <span>Cilacap Tengah • Pasar Selatan</span>
+          <span>Promo Produk Diskon</span>
         </div>
         <button type="button" className="promo__header-icon" aria-label="Notifikasi" onClick={() => navigate("/notifikasi")}>
           <Bell size={17} />
@@ -193,22 +174,25 @@ export default function Promo() {
         <span>{promos.length} Produk</span>
       </div>
 
-      {loadError && <p className="promo__notice" role="status">{loadError}</p>}
+      {(loadError || actionError) && <p className="promo__notice" role="alert">{loadError || actionError}</p>}
+      {loading && <p className="promo__empty">Memuat produk promo...</p>}
 
-      {promos.length ? (
-        <section className="promo__grid" aria-label="Produk promo">
-          {promos.map((product) => (
-            <PromoProduct
-              key={product.id}
-              product={product}
-              quantity={quantities[product.id] || 0}
-              onChangeQuantity={changeQuantity}
-              onOpen={openProduct}
-            />
-          ))}
-        </section>
-      ) : (
-        <p className="promo__empty">Belum ada promo aktif saat ini.</p>
+      {!loading && !loadError && (
+        promos.length ? (
+          <section className="promo__grid" aria-label="Produk promo">
+            {promos.map((product) => (
+              <PromoProduct
+                key={product.id}
+                product={product}
+                quantity={quantityFor(product)}
+                onChangeQuantity={changeQuantity}
+                onOpen={(item) => navigate(`/produk/${item.id}`, { state: { product: item } })}
+              />
+            ))}
+          </section>
+        ) : (
+          <p className="promo__empty">Belum ada produk promo aktif saat ini.</p>
+        )
       )}
 
       <BottomNav />

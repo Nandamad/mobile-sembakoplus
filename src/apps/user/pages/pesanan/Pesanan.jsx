@@ -1,126 +1,139 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, MapPin } from "lucide-react";
+import api from "../../../../shared/services/api";
 import BottomNav from "../../components/BottomNav";
 import "./Pesanan.css";
 
 const TABS = [
-  { label: "Dalam Proses", count: 1 },
-  { label: "Selesai", count: 2 },
-  { label: "Dibatalkan", count: 1 },
+  { id: "process", label: "Dalam Proses" },
+  { id: "completed", label: "Selesai" },
+  { id: "cancelled", label: "Dibatalkan" },
 ];
 
-const ORDERS = {
-  "Dalam Proses": [
-    {
-      id: "#SP-26012-AGT",
-      date: "Hari ini, 09:15 WIB",
-      status: "Sedang Dikirim",
-      statusTone: "shipping",
-      image: "🥬",
-      product: "Bayam Hijau Segar (1 Ikat)",
-      more: "+ 2 produk lainnya (Daging, Ikan)",
-      itemCount: "3 Barang Belanjaan",
-      total: "Rp 99.500",
-      payment: "Bayar di Tempat (COD)",
-      actions: [{ label: "Lacak Kurir", style: "primary", icon: true }],
-    },
-  ],
-  Selesai: [
-    {
-      id: "#SP-260205-SPK",
-      date: "15 Nov 2026, 14:30 WIB",
-      status: "Selesai",
-      statusTone: "complete",
-      image: "🍗",
-      product: "Paha Ayam Broiler (500g)",
-      more: "+ 1 produk lainnya (Bimoli 2L)",
-      itemCount: "2 Barang Belanjaan",
-      total: "Rp 54.000",
-      payment: "Bayar di Tempat (COD)",
-      actions: [
-        { label: "Lihat Struk", style: "outline" },
-        { label: "Beli Lagi", style: "primary" },
-      ],
-    },
-    {
-      id: "#SP-260101-SPK",
-      date: "20 Nov 2026, 11:20 WIB",
-      status: "Selesai",
-      statusTone: "complete",
-      image: "🥚",
-      product: "Telur Tray 30 Btr Segar",
-      more: "+ 2 produk lainnya (Beras 5kg, Gula 1kg)",
-      itemCount: "3 Barang Belanjaan",
-      total: "Rp 128.500",
-      payment: "Transfer Bank BRI",
-      actions: [
-        { label: "Beri Ulasan", style: "outline" },
-        { label: "Beli Lagi", style: "primary" },
-      ],
-    },
-  ],
-  Dibatalkan: [
-    {
-      id: "#SP-260208-CNC",
-      date: "28 Sep 2026, 08:15 WIB",
-      status: "Dibatalkan",
-      statusTone: "cancelled",
-      image: "🥩",
-      product: "Daging Sapi Rawon Segar (500g)",
-      more: "+ 1 produk lainnya (Lada Merah 250g)",
-      itemCount: "2 Barang Belanjaan",
-      total: "Rp 78.500",
-      payment: "Refund Berhasil (Dana kembali)",
-      actions: [
-        { label: "Rincian Batal", style: "outline" },
-        { label: "Pesan Ulang", style: "primary" },
-      ],
-    },
-  ],
+const STATUS_LABELS = {
+  created: "Menunggu Konfirmasi",
+  processing: "Sedang Diproses",
+  scheduled_tomorrow: "Dijadwalkan Besok",
+  delivering: "Sedang Dikirim",
+  arrived: "Pesanan Tiba",
+  failed_delivery: "Pengantaran Gagal",
+  completed: "Selesai",
+  cancelled: "Dibatalkan",
 };
 
-function OrderCard({ order, onAction }) {
+const rupiah = (amount) => `Rp ${Number(amount || 0).toLocaleString("id-ID")}`;
+
+function formatDate(iso) {
+  if (!iso) return "-";
+  return new Date(iso).toLocaleString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function getStatusTone(status) {
+  if (status === "completed") return "complete";
+  if (status === "cancelled" || status === "failed_delivery") return "cancelled";
+  return "shipping";
+}
+
+function OrderCard({ order, onAction, cancellingId }) {
+  const firstItem = order.items?.[0];
+  const extraCount = Math.max(0, (order.items?.length ?? 0) - 1);
+  const paymentMethod = String(order.payment?.payment_method || "cod").toUpperCase();
+  const isPaid = order.payment_status === "paid" || order.payment?.status === "paid";
+  const canCancel = order.order_status === "created" && !isPaid;
+  const canPayQris = paymentMethod === "QRIS" && !isPaid && order.order_status !== "cancelled";
+
   return (
     <article className="orders__card">
       <header className="orders__store">
         <div>
-          <strong>PT Generasi Digital Sinergi</strong>
-          <small>ID {order.id} • {order.date}</small>
+          <strong>SembakoPlus</strong>
+          <small>#{order.order_number} • {formatDate(order.placed_at)}</small>
         </div>
-        <span className={`orders__status orders__status--${order.statusTone}`}>
-          {order.status}
+        <span className={`orders__status orders__status--${getStatusTone(order.order_status)}`}>
+          {STATUS_LABELS[order.order_status] || order.order_status}
         </span>
       </header>
 
       <div className="orders__product">
-        <div className="orders__product-image" aria-hidden="true">{order.image}</div>
+        <div className="orders__product-image" aria-hidden="true">🛒</div>
         <div className="orders__product-info">
-          <strong>{order.product}</strong>
-          <span>{order.more}</span>
-          <small>{order.itemCount}</small>
+          <strong>{firstItem ? `${firstItem.product_name} (${firstItem.variant_name || ""})` : "Pesanan SembakoPlus"}</strong>
+          <span>{extraCount > 0 ? `+ ${extraCount} produk lainnya` : `${firstItem?.quantity || 1}x kemasan`}</span>
+          <small>{order.items?.length || 0} Jenis Barang</small>
         </div>
       </div>
 
       <footer className="orders__summary">
         <div className="orders__total">
           <span>Total Belanja</span>
-          <strong>{order.total}</strong>
-          <small>{order.payment}</small>
+          <strong>{rupiah(order.total)}</strong>
+          <small>{paymentMethod} • {isPaid ? "Lunas" : "Belum Lunas"}</small>
         </div>
         <div className="orders__actions">
-          {order.actions.map((action) => (
+          {canCancel && (
             <button
               type="button"
-              className={`orders__action orders__action--${action.style}`}
-              key={action.label}
-              onClick={() => onAction(action.label, order)}
+              className="orders__action orders__action--outline"
+              disabled={cancellingId === order.id}
+              onClick={() => onAction("cancel", order)}
             >
-              {action.icon && <MapPin size={13} />}
-              {action.label}
-              {action.icon && <ChevronRight size={13} />}
+              {cancellingId === order.id ? "Membatalkan..." : "Batalkan"}
             </button>
-          ))}
+          )}
+          {canPayQris && (
+            <button
+              type="button"
+              className="orders__action orders__action--primary"
+              onClick={() => onAction("pay", order)}
+            >
+              Bayar QRIS
+            </button>
+          )}
+          {order.order_status === "completed" && (
+            <>
+              {isPaid && (
+                <button
+                  type="button"
+                  className="orders__action orders__action--outline"
+                  onClick={() => onAction("receipt", order)}
+                >
+                  Lihat Struk
+                </button>
+              )}
+              <button
+                type="button"
+                className="orders__action orders__action--outline"
+                onClick={() => onAction("rate", order)}
+              >
+                Beri Ulasan
+              </button>
+              <button
+                type="button"
+                className="orders__action orders__action--primary"
+                onClick={() => onAction("reorder", order)}
+              >
+                Beli Lagi
+              </button>
+            </>
+          )}
+          {order.order_status !== "completed" && (
+            <button
+              type="button"
+              className="orders__action orders__action--primary"
+              onClick={() => onAction("track", order)}
+            >
+              <MapPin size={13} />
+              Lacak
+              <ChevronRight size={13} />
+            </button>
+          )}
         </div>
       </footer>
     </article>
@@ -128,25 +141,74 @@ function OrderCard({ order, onAction }) {
 }
 
 export default function Pesanan() {
-  const [activeTab, setActiveTab] = useState(TABS[0].label);
-  const orders = ORDERS[activeTab];
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("process");
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [cancellingId, setCancellingId] = useState(null);
 
-  function openAction(action, order) {
-    if (action === "Beri Ulasan") {
-      navigate("/pesanan/ulasan", { state: { order } });
-      return;
+  async function loadOrders() {
+    try {
+      setLoading(true);
+      setError("");
+      const { data } = await api.get("/orders");
+      setOrders(data?.data ?? []);
+    } catch (err) {
+      setError(err.response?.data?.error?.message || "Riwayat pesanan gagal dimuat. Pastikan Anda sudah masuk.");
+    } finally {
+      setLoading(false);
     }
-    const destinations = {
-      "Lacak Kurir": "/pesanan/lacak",
-      "Lihat Struk": "/pesanan/struk",
-      "Beli Lagi": "/pesanan/beli-lagi",
-      "Pesan Ulang": "/pesanan/beli-lagi",
-    };
-    const path = destinations[action];
-    if (!path) return;
-    navigate(path, { state: { order } });
   }
+
+  useEffect(() => {
+    let active = true;
+    api.get("/orders")
+      .then(({ data }) => {
+        if (active) {
+          setOrders(data?.data ?? []);
+          setError("");
+        }
+      })
+      .catch((err) => {
+        if (active) setError(err.response?.data?.error?.message || "Riwayat pesanan gagal dimuat. Pastikan Anda sudah masuk.");
+      })
+      .finally(() => active && setLoading(false));
+    return () => { active = false; };
+  }, []);
+
+  const grouped = useMemo(() => ({
+    process: orders.filter((order) => !["completed", "cancelled"].includes(order.order_status)),
+    completed: orders.filter((order) => order.order_status === "completed"),
+    cancelled: orders.filter((order) => order.order_status === "cancelled"),
+  }), [orders]);
+
+  async function handleAction(action, order) {
+    if (action === "track") {
+      navigate(`/pesanan/lacak?orderId=${order.id}`, { state: { order } });
+    } else if (action === "pay") {
+      navigate(`/pembayaran/qris?orderId=${order.id}`, { state: { order } });
+    } else if (action === "receipt") {
+      navigate(`/pesanan/struk?orderId=${order.id}`, { state: { order } });
+    } else if (action === "rate") {
+      navigate(`/pesanan/ulasan?orderId=${order.id}`, { state: { order } });
+    } else if (action === "reorder") {
+      navigate(`/pesanan/beli-lagi?orderId=${order.id}`, { state: { order } });
+    } else if (action === "cancel") {
+      try {
+        setCancellingId(order.id);
+        setError("");
+        await api.post(`/orders/${order.id}/cancel`, { reason: "Dibatalkan oleh pelanggan" });
+        await loadOrders();
+      } catch (err) {
+        setError(err.response?.data?.error?.message || "Pesanan gagal dibatalkan.");
+      } finally {
+        setCancellingId(null);
+      }
+    }
+  }
+
+  const visibleOrders = grouped[activeTab] ?? [];
 
   return (
     <main className="orders">
@@ -155,21 +217,33 @@ export default function Pesanan() {
       </header>
 
       <nav className="orders__tabs" aria-label="Status pesanan">
-        {TABS.map(({ label, count }) => (
+        {TABS.map(({ id, label }) => (
           <button
             type="button"
-            key={label}
-            className={activeTab === label ? "is-active" : ""}
-            aria-current={activeTab === label ? "page" : undefined}
-            onClick={() => setActiveTab(label)}
+            key={id}
+            className={activeTab === id ? "is-active" : ""}
+            aria-current={activeTab === id ? "page" : undefined}
+            onClick={() => setActiveTab(id)}
           >
-            {label} ({count})
+            {label} ({grouped[id].length})
           </button>
         ))}
       </nav>
 
-      {orders.map((order) => (
-        <OrderCard key={order.id} order={order} onAction={openAction} />
+      {error && <p className="orders__empty" role="alert">{error}</p>}
+      {loading && <p className="orders__empty">Memuat pesanan...</p>}
+
+      {!loading && !error && !visibleOrders.length && (
+        <p className="orders__empty">Belum ada pesanan pada kategori ini.</p>
+      )}
+
+      {!loading && visibleOrders.map((order) => (
+        <OrderCard
+          key={order.id}
+          order={order}
+          onAction={handleAction}
+          cancellingId={cancellingId}
+        />
       ))}
 
       <BottomNav />

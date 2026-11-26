@@ -39,8 +39,8 @@ export default function Keranjang() {
 
   const selectedItems = items.filter((item) => item.selected);
   const allSelected = items.length > 0 && selectedItems.length === items.length;
-  const total = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const originalTotal = selectedItems.reduce((sum, item) => sum + item.originalPrice * item.quantity, 0);
+  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const originalTotal = items.reduce((sum, item) => sum + item.originalPrice * item.quantity, 0);
   const discount = originalTotal - total;
 
   async function updateQuantity(id, amount) {
@@ -146,12 +146,12 @@ export default function Keranjang() {
       )}
 
       <footer className="cart__footer">
-        <button type="button" disabled={!selectedItems.length} onClick={() => navigate("/checkout")}>
+        <button type="button" disabled={!items.length} onClick={() => navigate("/checkout")}>
           <span className="cart__total">
             {discount > 0 && <s>{rupiah(originalTotal)}</s>}
             <strong>{rupiah(total)}</strong>
           </span>
-          <span>Selanjutnya <ChevronRight size={14} /></span>
+          <span>Checkout Semua ({items.length}) <ChevronRight size={14} /></span>
         </button>
       </footer>
     </main>

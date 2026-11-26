@@ -3,34 +3,56 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import api from "../../../../shared/services/api";
 import { ChevronLeft, Star, Plus, Check, Minus, X } from "lucide-react";
 import { addCartItem } from "../keranjang/cartData";
+import { mapApiProduct } from "../../../../shared/utils/productMapper";
 import "./ProductDetail.css";
 
-const rp = (n) => "Rp " + Number(n).toLocaleString("id-ID");
+const rp = (n) => "Rp " + Number(n || 0).toLocaleString("id-ID");
 
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { state } = useLocation();
 
-  // data awal dari kartu yang diklik (langsung tampil), lalu dilengkapi dari API
-  const [p, setP] = useState(state?.product ?? null);
+  const [p, setP] = useState(() => state?.product ? mapApiProduct(state.product) : null);
+  const [loading, setLoading] = useState(!state?.product);
+  const [loadError, setLoadError] = useState("");
   const [img, setImg] = useState(0);
-  const [vi, setVi] = useState(0); // varian berat terpilih
+  const [vi, setVi] = useState(0);
   const [added, setAdded] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
   const [showCartSheet, setShowCartSheet] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
-    api.get(`/products/${id}`).then((r) => setP(r.data?.data ?? null)).catch((error) => {
-      console.error("Gagal memuat detail produk", error);
-    });
-  }, [id]);
+    let active = true;
+    api.get(`/products/${id}`)
+      .then((r) => {
+        if (!active) return;
+        const mapped = mapApiProduct(r.data?.data ?? null);
+        setP(mapped);
+        setLoadError("");
+      })
+      .catch((error) => {
+        if (active && !state?.product) {
+          setLoadError(error.response?.data?.error?.message || "Produk tidak ditemukan.");
+        }
+      })
+      .finally(() => active && setLoading(false));
+    return () => { active = false; };
+  }, [id, state?.product]);
+
+  if (loading && !p) {
+    return (
+      <main className="detail">
+        <p className="detail__empty">Memuat detail produk...</p>
+      </main>
+    );
+  }
 
   if (!p) {
     return (
       <main className="detail">
-        <p className="detail__empty">Produk tidak ditemukan.</p>
+        <p className="detail__empty">{loadError || "Produk tidak ditemukan."}</p>
       </main>
     );
   }
@@ -102,16 +124,15 @@ export default function ProductDetail() {
 
         <h1 className="detail__name">{p.name}</h1>
 
-        {p.rating && (
+        {(p.rating || p.reviews_count > 0) && (
           <button
             type="button"
             className="detail__rating"
-            aria-label={`Lihat ${p.reviews || "semua"} ulasan untuk ${p.name}`}
+            aria-label={`Lihat ${p.reviews_count || "semua"} ulasan untuk ${p.name}`}
             onClick={() => navigate(`/produk/${id}/ulasan`, { state: { product: p } })}
           >
-            <Star size={13} fill="var(--sp-rating)" stroke="var(--sp-rating)" /> <b>{p.rating}</b>
-            {p.reviews && <> ({p.reviews} ulasan)</>}
-            {p.sold && <> • Terjual {p.sold}</>}
+            <Star size={13} fill="var(--sp-rating)" stroke="var(--sp-rating)" /> <b>{p.rating ?? "-"}</b>
+            <> ({p.reviews_count ?? 0} ulasan)</>
           </button>
         )}
       </section>
@@ -192,7 +213,7 @@ export default function ProductDetail() {
               <div>
                 <strong id="detail-sheet-title">{rp(v.price)}</strong>
                 {v.original_price > v.price && <small><s>{rp(v.original_price)}</s></small>}
-                <span>Stok: {p.stock ?? 50} • {v.label}</span>
+                <span>Stok: {v.stock ?? p.stock ?? 0} • {v.label}</span>
               </div>
             </div>
 

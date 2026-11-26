@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, ChevronLeft, Eye, EyeOff, Lock, X } from "lucide-react";
+import api from "../../../../shared/services/api";
 import "./UbahSandi.css";
 
 const REQUIREMENTS = [
@@ -50,6 +51,8 @@ export default function UbahSandi() {
   const [confirmation, setConfirmation] = useState("");
   const [visible, setVisible] = useState({ current: false, next: false, confirm: false });
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const passedRequirements = REQUIREMENTS.filter((rule) => rule.test(newPassword)).length;
   const passwordMatches = newPassword.length > 0 && confirmation === newPassword;
@@ -61,9 +64,26 @@ export default function UbahSandi() {
     setVisible((state) => ({ ...state, [field]: !state[field] }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    setError("Perubahan kata sandi belum tersimpan karena layanan backend belum tersedia.");
+    try {
+      setSubmitting(true);
+      setError("");
+      setSuccess("");
+      await api.patch("/profile/password", {
+        current_password: currentPassword,
+        password: newPassword,
+        password_confirmation: confirmation,
+      });
+      setSuccess("Kata sandi berhasil diperbarui. Sesi di perangkat lain telah dicabut.");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmation("");
+    } catch (err) {
+      setError(err.response?.data?.error?.message || err.response?.data?.message || "Kata sandi gagal diperbarui.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -145,11 +165,12 @@ export default function UbahSandi() {
         </section>
 
         {error && <p className="change-password__error" role="alert">{error}</p>}
+        {success && <p className="change-password__match is-valid" role="status">{success}</p>}
 
         <footer className="change-password__footer">
-          <button type="submit" disabled={!canSubmit}>
+          <button type="submit" disabled={!canSubmit || submitting}>
             {canSubmit && <Check size={14} />}
-            Simpan Kata Sandi Baru
+            {submitting ? "Menyimpan..." : "Simpan Kata Sandi Baru"}
           </button>
         </footer>
       </form>

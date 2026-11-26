@@ -101,7 +101,7 @@ export default function PanduanPembayaran() {
           <GuideSteps steps={QRIS_STEPS} />
           <p className="payment-guide__note">
             <Info size={11} />
-            Pada versi demo ini, QR hanya pratinjau dan belum dapat digunakan untuk transaksi.
+            Kode QRIS terhubung ke payment gateway Midtrans dan terkonfirmasi otomatis setelah pembayaran berhasil.
           </p>
         </section>
 

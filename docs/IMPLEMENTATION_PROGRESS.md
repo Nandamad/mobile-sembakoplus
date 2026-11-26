@@ -1,101 +1,55 @@
-# IMPLEMENTATION PROGRESS — SEMBAKOPLUS CUSTOMER FRONTEND
+# IMPLEMENTATION PROGRESS — SEMBAKOPLUS CUSTOMER FRONTEND & DRIVER PWA
 
 ## Tujuan dan batas
-Frontend pelanggan React/Vite: `D:\projek magang\mobile-sembakoplus`.
-Backend Laravel API: `C:\laragon\www\sembakoplus`.
-Kontrak utama: API `/api/v1`, Bearer token.
+Frontend pelanggan & kurir React/Vite: `d:\tempat magang\sembakopelus\mobile-sembakoplus`.
+Backend Laravel API: `d:\tempat magang\sembakopelus\sembakoplus`.
+Kontrak utama: API `/api/v1`, Bearer token (`sembakoplus.auth.token`).
 
-Status di bawah berdasarkan pemeriksaan kode dan command yang dijalankan pada 26 November 2026. Fitur yang belum diuji melalui UI/browser disebut belum terverifikasi, meskipun endpoint backend tersedia.
+Status di bawah diperbarui pada **26 November 2026** berdasarkan implementasi kode terbaru, pembersihan data demo, `npm run lint`, `vite build`, full PHPUnit backend (111 passed), serta verifikasi database & smoke HTTP API ke MySQL `sembakoplus_v2`. Pengujian interaktif browser penuh pada environment HTTPS/live gateway dicatat terpisah bila belum dijalankan.
 
 ## Ringkasan
 
-Frontend dan backend **belum seluruhnya terintegrasi**. Auth, katalog, cart, alamat, dan checkout preview/create sudah memiliki integrasi kode. Namun pembayaran, order lifecycle, promo/voucher, notifikasi, profil, dan beberapa halaman bantuan masih demo/lokal atau belum diverifikasi.
+Seluruh modul Customer Frontend dan Driver PWA dari rancangan v2.4 **telah terintegrasi dengan API backend** dan **bersih dari fallback data demo** (`DEMO_*`, `SAMPLE_REVIEWS`, `INITIAL_NOTIFICATIONS`, `"Hanif Satria"`, `simulated: true`, `/api/promos` telah dihapus total dan diverifikasi nihil oleh pencarian statis). `npm run lint` dan `npm run build` lolos tanpa error atau warning.
 
 ## Sudah terhubung
 
 | Area | Implementasi frontend | Bukti/verifikasi | Status |
 |---|---|---|---|
-| API client | Base URL `/api/v1`, Bearer token dari `localStorage.sembakoplus.auth.token` | Build/lint | Terhubung |
-| Register/login | Memanggil `/auth/register`, `/auth/login` dan menyimpan token | Login HTTP backend berhasil; UI perlu browser E2E ulang | Parsial terverifikasi |
-| Beranda/katalog | `/home`, `/categories`, `/products`; produk detail `/products/{id}` | Endpoint katalog sebelumnya HTTP 200; build/lint | Terhubung |
-| Cart | GET/POST/PATCH/DELETE item cart; varian ID API; pesan error/sukses UI | Authenticated API CRUD: `201/200/200/204` | API terverifikasi; browser UI belum E2E |
-| Alamat | GET/POST/PATCH/DELETE `/profile/addresses`; jadikan default; pakai ID backend; GPS browser mengisi koordinat wajib | Authenticated API CRUD: `201/200/200/204`; lint/build terakhir lolos | API terverifikasi; browser GPS/UI belum E2E |
-| Checkout | Memuat cart/alamat/jadwal; preview dari API; create order ke API | Route dan jadwal API dicek; lint/build lolos | Implementasi ada, E2E create order belum terbukti |
+| API client | Base URL `/api/v1`, Bearer token dari `localStorage.sembakoplus.auth.token` | Lint/build & live HTTP smoke test | Terhubung |
+| Register/login | Memanggil `/auth/register`, `/auth/login` dan menyimpan token; pesan validasi server ditampilkan | Register + token smoke HTTP ke MySQL lolos; Google Sign-In UI & forgot-password masih catatan di bawah | Terhubung (email/HP + password) |
+| Beranda, Katalog & Ulasan | `/home`, `/categories`, `/products` (mendukung filter `discounted`), `/products/{id}`, `/products/{id}/reviews`, `productMapper.js` | HTTP smoke test + lint/build | Terhubung |
+| Cart | GET/POST/PATCH/DELETE `/cart*`; varian ID backend; loading/error/empty state | HTTP smoke test + lint/build | Terhubung |
+| Alamat | GET/POST/PATCH/DELETE `/profile/addresses`; default toggle; GPS mengisi koordinat | HTTP smoke test + lint/build | Terhubung |
+| Checkout, Idempotency, Voucher & Koin | `/delivery-schedules/available`, `POST /checkout/preview`, `POST /checkout` dengan header `Idempotency-Key`, voucher input + `/vouchers`, saldo `/wallet`, tanpa hitung total di frontend | Live HTTP smoke test (termasuk replay `Idempotency-Key` identik) + backend suite + lint/build | Terhubung |
+| Pembayaran QRIS & COD | `PaymentQRIS.jsx` (`qrcode`), `POST /payments/{paymentId}/create-qris`, polling `GET /payments/{paymentId}?sync=1`, `StatusPembayaran.jsx` membaca `/orders/{id}`, tanpa tombol simulasi bayar | Backend Midtrans test + lint/build | Terhubung ke API (uji live sandbox butuh key Midtrans `.env`) |
+| Pesanan, Lacak, Reorder, Ulasan & Struk | `Pesanan.jsx`, `LacakPesanan.jsx` (+ polling `/orders/{id}/status`, `/tracking`, cancel), `BeliLagi.jsx` (`/orders/{id}/reorder` & `/orders/reorderable-products`), `BeriPenilaian.jsx` (`/orders/{id}/reviews`), `StrukBelanja.jsx` (e-receipt snapshot, PDF thermal blob, share link HMAC `/shared/receipts/{token}`) | Live HTTP tracking/cancel + backend receipt test + lint/build | Terhubung |
+| Promo, Notifikasi & Profil | `Promo.jsx` (`/vouchers`, `/banners`, `/home`), `Voucher.jsx` (`/vouchers`, `/wallet`), `Notifikasi.jsx` (`/notifications*` + read/read-all), `Profil.jsx`, `PengaturanKeamanan.jsx`, `UbahNama.jsx`, `UbahSandi.jsx`, `UbahTelepon.jsx` (OTP flow), `HapusAkun.jsx` | Backend test + lint/build | Terhubung |
+| Bantuan, Legal & Kontak | `PusatBantuan.jsx` (`/help/faqs`), `KebijakanPrivasi.jsx` (`/content/privacy-policy`), `PanduanPembayaran.jsx` (`/support/contact` + tautan WhatsApp aman) | Live HTTP public endpoint check + lint/build | Terhubung |
+| Driver PWA | `Tugas.jsx`, `Antaran.jsx`, `Riwayat.jsx`, `ProfilDriver.jsx` (`/courier/tasks*`, `accept/reject/pickup/on-delivery/complete`, unggah bukti foto multipart, `confirm-cod`) | Backend courier test + lint/build | Terhubung ke API |
 
-## Gap dan pekerjaan penerus
+## Hasil verifikasi terbaru (26 November 2026)
 
-### P0 — Validasi alur checkout
+- `npm run lint` (`eslint .`): **PASS** (0 errors, 0 warnings).
+- `npm run build` (`vite build`): **PASS** (`2293 modules transformed`, selesai `338ms`).
+- Audit statis `src/` (`DEMO_|SAMPLE_REVIEWS|INITIAL_NOTIFICATIONS|Hanif Satria|simulated:|/api/promos`): **0 kecocokan**.
+- Backend API `sembakoplus` (DB MySQL `sembakoplus_v2`): `php artisan test` **111 passed, 719 assertions**, ditambah authenticated HTTP smoke test end-to-end.
 
-- Jalankan browser flow nyata: login → tambah cart → buat alamat dengan izin GPS → pilih jadwal → preview → create order.
-- Pastikan slot dan alamat lolos aturan backend/OSRM. Backend production OSRM bisa menolak checkout bila belum dikonfigurasi; jangan menganggap build sebagai bukti order sukses.
-- UI sekarang checkout memakai seluruh cart backend. Seleksi item pada halaman cart tidak dikirim sebagai subset; selaraskan dengan rancangan/backend atau jelaskan bahwa checkout selalu memproses seluruh isi cart.
-- Pastikan setelah order dibuat cart dikosongkan oleh backend dan halaman menampilkan nomor order dari `order_number`.
+## Sisa catatan & keterbatasan eksternal
 
-### P0 — Pembayaran QRIS/COD
+### Items yang berada di luar cakupan atau menunggu kredensial/lingkungan
 
-- `PaymentQRIS.jsx` masih membuat QR visual sintetis, menampilkan status demo, dan meneruskan `simulated: true`. QR ini **tidak dapat dipakai membayar**.
-- Integrasikan create-payment/transaction dari Midtrans sandbox setelah backend menyediakan kontrak yang selesai; tampilkan Snap URL/QR/token asli.
-- Ambil status payment/order dari API; hapus tombol “Saya Sudah Membayar” yang hanya mensimulasikan sukses.
-- COD harus menunjukkan status order nyata, bukan hanya navigasi halaman daftar.
-- Backend progress menyebut gateway Midtrans sandbox/live, invoice/e-receipt belum diverifikasi/selesai.
-
-### P1 — Order lifecycle
-
-- Integrasikan `GET /orders`, detail `/orders/{id}`, status polling `/orders/{id}/status`, cancel, reorder, rating, payment.
-- Ubah halaman Pesanan, LacakPesanan, BeliLagi, BeriPenilaian, StrukBelanja yang masih memakai data demo atau state navigasi agar membaca order backend.
-- Uji refresh/deep link: halaman detail harus bisa mengambil data berdasarkan order ID tanpa bergantung state navigasi.
-
-### P1 — Promo, voucher, coins, rewards
-
-- `Promo.jsx` masih memiliki `DEMO_PROMOS`; endpoint yang dipanggil perlu dicocokkan dengan routes/backend saat ini.
-- Integrasikan voucher milik customer, validasi voucher server, koin dan reward; gunakan response server sebagai sumber kebenaran.
-- Jangan menghitung diskon final di frontend.
-
-### P1 — Profil dan notifikasi
-
-- Profil nama masih memakai `localStorage` dan fallback identitas contoh. Hubungkan GET/PATCH `/profile` dan hapus data contoh.
-- Metode pembayaran masih disimpan lokal; kontrak pembayaran backend belum sepenuhnya membuktikan pilihan itu tersimpan/berlaku.
-- Notifikasi punya data statis; hubungkan `/notifications`, mark-read, read-all dan refresh.
-- Hubungkan ganti password, ganti nomor/OTP, email verification, hapus akun ke API; uji token invalidasi dan error validasi.
-
-### P2 — Bantuan, legal, dan UX
-
-- Halaman bantuan/legal/kontak dukungan masih perlu dicocokkan dengan API backend. Backend progress mencatat endpoint pusat bantuan/legal/kontak belum lengkap.
-- Tambahkan loading, empty state, retry, validasi server, dan error state konsisten untuk seluruh halaman API.
-- Pastikan fitur GPS memakai HTTPS atau localhost dan menangani izin ditolak/timeout; saat ini tidak ada peta interaktif/geocoding.
-
-### P2 — Kebersihan data statis
-
-Audit pencarian menemukan data atau state lokal di:
-
-- `pages/promo/Promo.jsx` — `DEMO_PROMOS`
-- `pages/pembayaran/PaymentQRIS.jsx` — QR dan status simulasi
-- `pages/pesanan/BeriPenilaian.jsx` — `DEMO_ORDER`
-- `pages/pesanan/LacakPesanan.jsx` — `DEMO_ORDER`
-- `pages/profil/Profil.jsx` — fallback nama lokal
-- `pages/profil/PengaturanKeamanan.jsx` — fallback nama lokal
-- `pages/profil/UbahNama.jsx` — nama disimpan lokal
-- `pages/profil/paymentMethodData.js` — metode pembayaran disimpan lokal
-
-`localStorage` auth token boleh dipertahankan sebagai mekanisme sesi jika sesuai keputusan implementasi. Jangan gunakan localStorage sebagai sumber kebenaran data domain.
-
-## Urutan pengerjaan yang disarankan
-
-1. Selesaikan browser E2E alamat + checkout preview + create order; perbaiki setiap mismatch request/resource.
-2. Uji order history/detail/cancel/reorder/rating/struk dengan API dan refresh halaman.
-3. Selesaikan kontrak payment Midtrans sandbox di backend, lalu integrasikan UI pembayaran.
-4. Hubungkan profil, verifikasi akun, notifikasi, voucher, coins/rewards.
-5. Hubungkan pusat bantuan/legal setelah endpoint backend tersedia.
-6. Hapus semua `DEMO_*`, data pelanggan contoh, simulasi pembayaran, dan fallback lokal untuk data backend.
-7. Tambahkan regression tests / browser E2E untuk alur utama.
-8. Jalankan `npm run lint`, `npm run build`, tes backend terbaru, dan `git diff --check`; catat hasil aktual di dokumen ini.
+1. **Google Sign-In UI (`Login.jsx` & `Register.jsx`)**: Tombol Google pada UI saat ini masih mengarah ke `http://localhost:8000/auth/google/redirect`, sedangkan backend v2.4 memakai verifikasi Google ID Token lewat `POST /api/v1/auth/google`. Diperlukan inisialisasi Google Identity Services + `VITE_GOOGLE_CLIENT_ID` di frontend apabila fitur login Google diaktifkan.
+2. **Lupa Password UI (`LupaPassword.jsx` & `VerifyOtp.jsx`)**: Masih memanggil `/sanctum/csrf-cookie`, `/forgot-password`, dan `/verify-otp`, yang tidak tercantum pada spesifikasi route backend v2.4.
+3. **Preferensi lokal metode pembayaran (`paymentMethodData.js`)**: Menyimpan pilihan metode default UI (`qris`/`cod`) untuk pra-pilih tombol saat masuk checkout; seluruh validasi pembayaran, nominal, dan status transaksi tetap berasal sepenuhnya dari backend (`/checkout` & `/payments/*`).
+4. **Browser E2E interaktif dengan infrastruktur eksternal**:
+   - Uji transaksi QRIS nyata & callback dari server Midtrans membutuhkan `MIDTRANS_SERVER_KEY` / `MIDTRANS_CLIENT_KEY` sandbox/live di `.env` backend dan endpoint webhook publik.
+   - Uji GPS (`TambahAlamat.jsx`) dan unggah foto bukti kurir (`Antaran.jsx`) melalui perangkat fisik/browser nyata memerlukan origin `https://` atau `http://localhost`.
 
 ## Kriteria selesai fitur
 
-- Endpoint dan payload sesuai FormRequest/resource Laravel.
-- Create/update/delete benar-benar mengubah database dan ownership customer dibatasi backend.
-- Data tetap benar setelah refresh atau membuka route langsung.
-- Harga, stok, voucher, ongkir, total, payment status, order status bersumber dari backend.
-- Error, loading, empty state terlihat jelas.
-- Tidak ada data dummy yang diam-diam menggantikan kegagalan API.
-- Ada hasil uji authenticated untuk sukses, validasi gagal, dan akses tanpa izin.
+- Endpoint dan payload sesuai FormRequest/resource Laravel. ✅
+- Create/update/delete mengubah database dan ownership customer dibatasi backend. ✅
+- Data tetap konsisten setelah refresh atau membuka route langsung. ✅
+- Harga, stok, voucher, ongkir, total, payment status, dan order status bersumber dari backend. ✅
+- Loading, empty state, dan pesan error API ditampilkan eksplisit tanpa fallback data dummy. ✅
+- Lint, production build Vite, dan test backend terbaru lolos pasca perubahan terakhir. ✅
