@@ -41,9 +41,10 @@ export default function PaymentQRIS() {
   const { state } = useLocation();
   const [remainingSeconds, setRemainingSeconds] = useState(899);
   const [notice, setNotice] = useState("");
-  const [orderReference] = useState(() => `SP-${Date.now().toString().slice(-10)}`);
-  const items = Array.isArray(state?.items) ? state.items : [];
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const order = state?.order ?? null;
+  const [orderReference] = useState(() => state?.orderReference ?? order?.order_number ?? `SP-${Date.now().toString().slice(-10)}`);
+  const items = Array.isArray(order?.items) ? order.items : [];
+  const total = Number(order?.total ?? 0);
 
   useEffect(() => {
     if (remainingSeconds <= 0) return undefined;

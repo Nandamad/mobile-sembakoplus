@@ -1,5 +1,5 @@
 import { useState } from "react";
-import api from "../../services/api";
+import api, { saveAuthToken } from "../../services/api";
 import { User, Lock, Eye, EyeOff } from "lucide-react";
 import "./Login.css";
 
@@ -26,12 +26,15 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await api.get("/sanctum/csrf-cookie");
-      await api.post("/login", { login, password });
+      const response = await api.post("/auth/login", {
+        identifier: login,
+        password,
+      });
+      saveAuthToken(response.data?.data?.token);
       window.location.href = "/beranda";
     } catch (err) {
       setError(
-        err.response?.data?.message || "No. HP/email atau password salah."
+        err.response?.data?.error?.message || err.response?.data?.message || "No. HP/email atau password salah."
       );
     } finally {
       setLoading(false);

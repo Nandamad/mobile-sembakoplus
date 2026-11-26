@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import api from "../../../../shared/services/api";
 import { ChevronLeft, Star, Plus, Check, Minus, X } from "lucide-react";
-import { addCartItem, createCartItem } from "../keranjang/cartData";
+import { addCartItem } from "../keranjang/cartData";
 import "./ProductDetail.css";
 
 const rp = (n) => "Rp " + Number(n).toLocaleString("id-ID");
@@ -17,11 +17,14 @@ export default function ProductDetail() {
   const [img, setImg] = useState(0);
   const [vi, setVi] = useState(0); // varian berat terpilih
   const [added, setAdded] = useState(false);
+  const [actionMessage, setActionMessage] = useState("");
   const [showCartSheet, setShowCartSheet] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
-    api.get(`/api/products/${id}`).then((r) => setP(r.data)).catch(() => {});
+    api.get(`/products/${id}`).then((r) => setP(r.data?.data ?? null)).catch((error) => {
+      console.error("Gagal memuat detail produk", error);
+    });
   }, [id]);
 
   if (!p) {
@@ -40,18 +43,25 @@ export default function ProductDetail() {
   const save = v.original_price > v.price ? v.original_price - v.price : 0;
   const pct = save ? Math.round((save / v.original_price) * 100) : 0;
 
-  function handleAdd() {
-    addCartItem(p, v, quantity);
-    setAdded(true);
-    setShowCartSheet(false);
-    setQuantity(1);
-    setTimeout(() => setAdded(false), 1500);
+  async function handleAdd() {
+    try {
+      await addCartItem(p, v, quantity);
+      setAdded(true);
+      setShowCartSheet(false);
+      setQuantity(1);
+      setTimeout(() => setAdded(false), 1500);
+    } catch (error) {
+      setActionMessage(error.response?.data?.error?.message || error.message || "Produk gagal dimasukkan ke keranjang.");
+    }
   }
 
-  function handleBuyNow() {
-    navigate("/checkout", {
-      state: { checkoutItems: [{ ...createCartItem(p, v), quantity }] },
-    });
+  async function handleBuyNow() {
+    try {
+      await addCartItem(p, v, quantity);
+      navigate("/checkout");
+    } catch (error) {
+      setActionMessage(error.response?.data?.error?.message || error.message || "Checkout gagal dibuat.");
+    }
   }
 
   return (
@@ -153,6 +163,7 @@ export default function ProductDetail() {
           Beli Sekarang
         </button>
       </div>
+      {actionMessage && <p className="detail__message" role="alert">{actionMessage}</p>}
 
       {showCartSheet && (
         <div

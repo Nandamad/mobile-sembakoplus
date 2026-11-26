@@ -1,5 +1,5 @@
 import { useState } from "react";
-import api from "../../services/api";
+import api, { saveAuthToken } from "../../services/api";
 import { ChevronLeft, User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import "./Login.css"; // dipakai bersama (class .login, .login__field, dll.)
 import "./Register.css";
@@ -37,14 +37,14 @@ export default function Register() {
 
     setLoading(true);
     try {
-      await api.get("/sanctum/csrf-cookie");
-      await api.post("/register", {
+      const response = await api.post("/auth/register", {
         name: form.name,
-        // hapus angka 0 di depan, lalu tambah kode negara: 0812... -> +62812...
-        phone: "+62" + form.phone.replace(/^0+/, ""),
-        email: form.email,
+        phone: form.phone ? "+62" + form.phone.replace(/^0+/, "") : null,
+        email: form.email || null,
         password: form.password,
+        password_confirmation: form.password,
       });
+      saveAuthToken(response.data?.data?.token);
       window.location.href = "/beranda";
     } catch (err) {
       setError(err.response?.data?.message || "Pendaftaran gagal. Coba lagi.");

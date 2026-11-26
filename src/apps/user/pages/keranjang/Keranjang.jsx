@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Minus, Plus, Trash2 } from "lucide-react";
-import { getAddresses } from "../profil/addressData";
+
 import {
   CART_UPDATED_EVENT,
   changeCartQuantity,
   getCartItems,
+  loadCart,
   removeSelectedCartItems,
   setAllCartItemsSelected,
   setCartItemSelected,
@@ -25,14 +26,14 @@ function CartImage({ item }) {
 export default function Keranjang() {
   const navigate = useNavigate();
   const [items, setItems] = useState(getCartItems);
-  const [address] = useState(() => {
-    const addresses = getAddresses();
-    return addresses.find((item) => item.primary) ?? addresses[0] ?? null;
-  });
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const updateCart = () => setItems(getCartItems());
     window.addEventListener(CART_UPDATED_EVENT, updateCart);
+    loadCart().catch((requestError) => {
+      setError(requestError.response?.data?.error?.message || "Gagal memuat keranjang. Masuk kembali lalu coba lagi.");
+    });
     return () => window.removeEventListener(CART_UPDATED_EVENT, updateCart);
   }, []);
 
@@ -42,9 +43,14 @@ export default function Keranjang() {
   const originalTotal = selectedItems.reduce((sum, item) => sum + item.originalPrice * item.quantity, 0);
   const discount = originalTotal - total;
 
-  function updateQuantity(id, amount) {
-    changeCartQuantity(id, amount);
-    setItems(getCartItems());
+  async function updateQuantity(id, amount) {
+    try {
+      setError("");
+      await changeCartQuantity(id, amount);
+      setItems(getCartItems());
+    } catch (requestError) {
+      setError(requestError.response?.data?.error?.message || "Jumlah produk gagal diubah.");
+    }
   }
 
   function updateSelection(id, checked) {
@@ -57,9 +63,14 @@ export default function Keranjang() {
     setItems(getCartItems());
   }
 
-  function removeSelected() {
-    removeSelectedCartItems();
-    setItems(getCartItems());
+  async function removeSelected() {
+    try {
+      setError("");
+      await removeSelectedCartItems();
+      setItems(getCartItems());
+    } catch (requestError) {
+      setError(requestError.response?.data?.error?.message || "Produk gagal dihapus.");
+    }
   }
 
   return (
@@ -74,11 +85,13 @@ export default function Keranjang() {
       <section className="cart__address">
         <span className="cart__address-icon">⌂</span>
         <div>
-          <strong>{address?.label ?? "Alamat Pengiriman"} <i>Utama</i></strong>
-          <p>{address?.address ?? "Tambahkan alamat pengiriman terlebih dahulu."}</p>
+          <strong>Alamat Pengiriman</strong>
+          <p>Alamat dipilih saat checkout.</p>
         </div>
         <button type="button" onClick={() => navigate("/profil/alamat")}>Ganti</button>
       </section>
+
+      {error && <p className="cart__message" role="alert">{error}</p>}
 
       <div className="cart__select-all">
         <label>

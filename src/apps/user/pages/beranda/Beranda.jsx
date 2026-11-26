@@ -4,69 +4,8 @@ import api from "../../../../shared/services/api";
 import { Search, Bell, ShoppingCart, LayoutGrid, ArrowRight, Clock3, Zap } from "lucide-react";
 import ProductCard from "../../components/ProductCard";
 import BottomNav from "../../components/BottomNav";
-import { addCartItem, CART_UPDATED_EVENT, getCartCount } from "../keranjang/cartData";
+import { addCartItem, CART_UPDATED_EVENT, getCartCount, loadCart } from "../keranjang/cartData";
 import "./Beranda.css";
-
-/* ===== DATA CONTOH =====
-   Dipakai selama API Laravel belum ada. Kalau API sudah jalan,
-   data dari API otomatis menggantikan ini (hapus saja setelah siap). */
-const DUMMY = {
-  banners: [
-    { id: 1, title: "Sayur & Daging Segar Hemat s.d 40%", button_text: "Belanja Sekarang", link: "/promo", image: "", bg: "#2e6b14" },
-    { id: 2, title: "Gratis Ongkir Belanja Pagi", button_text: "Lihat Promo", link: "/promo", image: "", bg: "#b8561f" },
-  ],
-  categories: [
-    { id: "sayuran", name: "Sayuran", icon: "🥬" },
-    { id: "daging", name: "Ayam & Daging", icon: "🍗" },
-    { id: "ikan", name: "Ikan Laut", icon: "🐟" },
-    { id: "rempah", name: "Bumbu Dapur", icon: "🌶️" },
-    { id: "sembako", name: "Beras & Sembako", icon: "🍚" },
-    { id: "buah", name: "Buah-buahan", icon: "🍎" },
-    { id: "telur", name: "Telur & Susu", icon: "🥚" },
-    { id: "instan", name: "Makanan Instan", icon: "🍜" },
-    { id: "minyak", name: "Minyak Goreng", icon: "🛢️" },
-    { id: "bersih", name: "Kebersihan", icon: "🧴" },
-    { id: "snack", name: "Snack", icon: "🍪" },
-  ],
-  products: [
-    {
-  id: 1,
-  name: "Bayam Hijau Segar",
-  category: "sayuran",
-  unit: "250 gram",
-  price: 3500,
-  icon: "🥬",
-  original_price: 5000,
-  rating: 4.9,
-  reviews: "1.2k",
-  sold: "4.8k+",
-  variants: [
-    { label: "250 gram", price: 3500, original_price: 5000 },
-    { label: "500 gram", price: 6900, original_price: 9900 },
-    { label: "1 Kilogram", price: 12000, original_price: 17000 },
-  ],
-  specs: [
-    { label: "Kondisi", value: "Segar & Bebas Pestisida" },
-    { label: "Asal Produk", value: "Pasar Sidodadi" },
-    { label: "Masa Simpan", value: "3 - 4 Hari (simpan di chiller/kulkas)" },
-    { label: "Pengemasan", value: "Higienis Food-Grade Wrapped Pack" },
-  ],
-  description: "Bayam hijau segar pilihan Grade A dari Pasar Sidodadi. Daun hijau segar, batang empuk, dikirim tanpa sisa tanah. Cocok untuk sayur bening, pecel, dan smoothie.",
-  flash_sale: { active: true, price: 3500, original_price: 5000, sold: 38, stock: 50 },
-},
-    { id: 2, name: "Brokoli Hijau", category: "sayuran", unit: "500 gram", price: 12000, icon: "🥦" },
-    { id: 3, name: "Wortel Segar", category: "sayuran", unit: "500 gram", price: 8000, icon: "🥕" },
-    { id: 4, name: "Tomat Merah", category: "sayuran", unit: "500 gram", price: 6000, icon: "🍅" },
-    { id: 5, name: "Terong Ungu", category: "sayuran", unit: "500 gram", price: 6320, icon: "🍆" },
-    { id: 6, name: "Buncis / Ujung", category: "sayuran", unit: "500 gram", price: 7500, icon: "🫛" },
-    { id: 7, name: "Paha Ayam Segar", category: "daging", unit: "500 gram", price: 24500, icon: "🍗", featured: true, flash_sale: { active: true, price: 19500, original_price: 24500, sold: 32, stock: 45 } },
-    { id: 8, name: "Fillet Salmon", category: "ikan", unit: "250 gram", price: 48000, icon: "🐟", featured: true },
-    { id: 9, name: "Cabai Merah Besar", category: "rempah", unit: "250 gram", price: 29000, icon: "🌶️", featured: true, flash_sale: { active: true, price: 11500, original_price: 15000, sold: 28, stock: 40 } },
-    { id: 10, name: "Minyak Goreng 2L", category: "minyak", unit: "2 liter", price: 34500, icon: "🛢️" },
-    { id: 11, name: "Telur Ayam Negeri", category: "telur", unit: "1 kg", price: 40000, icon: "🥚" },
-    { id: 12, name: "Gula Pasir", category: "sembako", unit: "1 kg", price: 17000, icon: "🍚" },
-  ],
-};
 
 const VISIBLE_CATEGORIES = 7; // sisanya muncul saat "Lainnya" ditekan
 
@@ -196,29 +135,83 @@ function Categories({ items, active, onPick }) {
 
 export default function Beranda() {
   const navigate = useNavigate();
-  const [data, setData] = useState(DUMMY);
+  const [data, setData] = useState({ banners: [], categories: [], products: [] });
   const [active, setActive] = useState(null); // id kategori terpilih
   const [query, setQuery] = useState("");
   const [cart, setCart] = useState(getCartCount);
+  const [actionMessage, setActionMessage] = useState("");
   const [flashSaleSeconds, setFlashSaleSeconds] = useState(2 * 60 * 60 + 15 * 60 + 20);
+
+  async function handleAddProduct(product, variant) {
+    try {
+      await addCartItem(product, variant);
+      setActionMessage(`${product.name} masuk keranjang.`);
+    } catch (error) {
+      setActionMessage(error.response?.data?.error?.message || error.message || "Produk gagal dimasukkan ke keranjang.");
+    }
+  }
   const flashSaleProducts = getFlashSaleProducts(data.products);
 
   useEffect(() => {
     const updateCartCount = () => setCart(getCartCount());
     window.addEventListener(CART_UPDATED_EVENT, updateCartCount);
+    if (localStorage.getItem("sembakoplus.auth.token")) {
+      loadCart().catch((error) => console.error("Gagal memuat keranjang", error));
+    }
     return () => window.removeEventListener(CART_UPDATED_EVENT, updateCartCount);
   }, []);
 
   useEffect(() => {
-    Promise.all([
-      api.get("/api/banners"),
-      api.get("/api/categories"),
-      api.get("/api/products"),
-    ])
-      .then(([b, c, p]) =>
-        setData({ banners: b.data, categories: c.data, products: p.data })
-      )
-      .catch(() => {}); // gagal / belum ada API: tetap pakai data contoh
+    let activeRequest = true;
+    Promise.all([api.get("/home"), api.get("/categories"), api.get("/products")])
+      .then(([homeResponse, categoryResponse, productResponse]) => {
+        if (!activeRequest) return;
+        const home = homeResponse.data?.data ?? {};
+        const categories = categoryResponse.data?.data ?? [];
+        const products = productResponse.data?.data ?? [];
+        setData({
+          banners: (home.banners ?? []).map((banner) => ({
+            ...banner,
+            image: banner.image_url ?? banner.image ?? "",
+            bg: banner.background_color ?? banner.bg ?? "#2e6b14",
+          })),
+          categories: categories.map((category) => ({
+            ...category,
+            icon: category.icon ?? "🛒",
+          })),
+          products: products.map((product) => {
+            const variants = (product.variants ?? []).map((variant) => {
+              const discount = variant.discount;
+              const price = Number(variant.price);
+              const originalPrice = discount?.type === "percentage"
+                ? Math.round(price / (1 - Number(discount.value) / 100))
+                : discount?.type === "fixed"
+                  ? price + Number(discount.value)
+                  : price;
+              return {
+                ...variant,
+                label: variant.name,
+                original_price: originalPrice,
+              };
+            });
+            const selected = variants.find((variant) => variant.is_default) ?? variants[0];
+            return {
+              ...product,
+              image: product.image_url,
+              category: product.category_id,
+              variants,
+              unit: selected?.label ?? "",
+              price: selected?.price ?? 0,
+              original_price: selected?.original_price ?? selected?.price ?? 0,
+              featured: false,
+            };
+          }),
+        });
+      })
+      .catch((error) => {
+        console.error("Gagal memuat katalog SembakoPlus API", error);
+      });
+    return () => { activeRequest = false; };
   }, []);
 
   useEffect(() => {
@@ -240,7 +233,7 @@ export default function Beranda() {
       key={p.id}
       product={p}
       label={catName(p.category)}
-      onAdd={() => addCartItem(p, { label: p.unit, price: p.price, original_price: p.original_price })}
+      onAdd={() => handleAddProduct(p, p.variants?.find((variant) => variant.is_default) ?? p.variants?.[0])}
     />
   );
 
@@ -269,6 +262,7 @@ export default function Beranda() {
           onChange={(e) => setQuery(e.target.value)}
         />
       </div>
+      {actionMessage && <p className="beranda__cart-message" role="status">{actionMessage}</p>}
 
       {!showGrid && <Banners items={data.banners} />}
 
@@ -303,11 +297,7 @@ export default function Beranda() {
                   key={product.id}
                   product={product}
                   onOpen={() => navigate(`/produk/${product.id}`, { state: { product: productForDetail } })}
-                  onAdd={() => addCartItem(product, {
-                    label: product.unit,
-                    price: product.price,
-                    original_price: product.original_price,
-                  })}
+                  onAdd={() => handleAddProduct(product, product.variants?.find((variant) => variant.is_default) ?? product.variants?.[0])}
                 />
               );
             })}

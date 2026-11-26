@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ChevronLeft,
@@ -12,19 +12,38 @@ import "./DaftarAlamat.css";
 
 export default function DaftarAlamat() {
   const navigate = useNavigate();
-  const [addresses, setAddresses] = useState(getAddresses);
+  const [addresses, setAddresses] = useState([]);
   const [message, setMessage] = useState("");
 
-  function makePrimary(index) {
+  async function refreshAddresses() {
     try {
-      setPrimaryAddress(index);
-      setAddresses(getAddresses());
+      const nextAddresses = await getAddresses();
+      setAddresses(nextAddresses);
       setMessage("");
     } catch (error) {
-      console.error("Gagal mengubah alamat utama:", error);
-      setMessage("Alamat utama belum berhasil diubah. Silakan coba lagi.");
+      setMessage(error.response?.data?.error?.message || "Gagal memuat alamat. Login ulang lalu coba lagi.");
     }
+  }
 
+  useEffect(() => {
+    let active = true;
+    getAddresses()
+      .then((nextAddresses) => {
+        if (active) setAddresses(nextAddresses);
+      })
+      .catch((error) => {
+        if (active) setMessage(error.response?.data?.error?.message || "Gagal memuat alamat. Login ulang lalu coba lagi.");
+      });
+    return () => { active = false; };
+  }, []);
+
+  async function makePrimary(id) {
+    try {
+      await setPrimaryAddress(id);
+      await refreshAddresses();
+    } catch (error) {
+      setMessage(error.response?.data?.error?.message || "Alamat utama belum berhasil diubah.");
+    }
   }
 
   return (
@@ -37,8 +56,8 @@ export default function DaftarAlamat() {
       </header>
 
       <div className="addresses__list">
-        {addresses.map((address, index) => (
-          <article className="addresses__card" key={address.label}>
+        {addresses.map((address) => (
+          <article className="addresses__card" key={address.id}>
             <header>
               <span className="addresses__pin"><MapPin size={14} /></span>
               <strong>{address.label}</strong>
@@ -54,14 +73,14 @@ export default function DaftarAlamat() {
             )}
             <footer>
               {!address.primary && (
-                <button type="button" className="addresses__secondary" onClick={() => makePrimary(index)}>
+                <button type="button" className="addresses__secondary" onClick={() => makePrimary(address.id)}>
                   Jadikan Utama
                 </button>
               )}
               <button
                 type="button"
                 className="addresses__secondary"
-                onClick={() => navigate("/profil/alamat/ubah", { state: { address, addressIndex: index } })}
+                onClick={() => navigate("/profil/alamat/ubah", { state: { address } })}
               >
                 Ubah Alamat
               </button>

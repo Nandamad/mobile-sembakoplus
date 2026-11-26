@@ -10,15 +10,16 @@ export default function TambahAlamat() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const editingAddress = state?.address;
-  const addressIndex = state?.addressIndex;
-  const isEditing = Boolean(editingAddress && Number.isInteger(addressIndex));
+  const isEditing = Boolean(editingAddress?.id);
   const [type, setType] = useState("Rumah");
-  const [recipient, setRecipient] = useState("Hanif Sinergi");
-  const [phone, setPhone] = useState("+62 812-3456-7890");
+  const [recipient, setRecipient] = useState("");
+  const [phone, setPhone] = useState("");
   const [city, setCity] = useState("Cilacap Selatan, Sidakaya (53211)");
-  const [street, setStreet] = useState("Jl. Laut No. 42, RT 03 / RW 02, Sidakaya");
-  const [note, setNote] = useState("Pagar hitam samping warung Bu Siti");
-  const [primary, setPrimary] = useState(true);
+  const [street, setStreet] = useState("");
+  const [note, setNote] = useState("");
+  const [primary, setPrimary] = useState(false);
+  const [latitude, setLatitude] = useState(editingAddress?.latitude ?? null);
+  const [longitude, setLongitude] = useState(editingAddress?.longitude ?? null);
   const [error, setError] = useState("");
   const [editLabel, setEditLabel] = useState(editingAddress?.label ?? "");
   const [editContact, setEditContact] = useState(editingAddress?.contact ?? "");
@@ -27,52 +28,78 @@ export default function TambahAlamat() {
   const [editPrimary, setEditPrimary] = useState(Boolean(editingAddress?.primary));
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
-  function handleEditSubmit(event) {
+  function splitContact(value) {
+    const match = value.match(/^(.*?)\s*\(([^)]+)\)$/);
+    return { recipient_name: match?.[1]?.trim() || value.trim(), phone: match?.[2]?.trim() || "" };
+  }
+
+  async function handleEditSubmit(event) {
     event.preventDefault();
+    if (latitude == null || longitude == null) {
+      setError("Ambil lokasi GPS alamat sebelum menyimpan.");
+      return;
+    }
     try {
-      updateAddress(addressIndex, {
-        ...editingAddress,
+      const contact = splitContact(editContact);
+      await updateAddress(editingAddress.id, {
         label: editLabel.trim(),
-        contact: editContact.trim(),
+        recipient_name: contact.recipient_name,
+        phone: contact.phone,
         address: editAddress.trim(),
-        note: editNote.trim(),
-        primary: editPrimary,
+        address_notes: editNote.trim(),
+        latitude,
+        longitude,
+        is_default: editPrimary,
       });
       navigate("/profil/alamat", { replace: true });
     } catch (saveError) {
-      console.error("Gagal mengubah alamat pengiriman:", saveError);
-      setError("Perubahan alamat belum tersimpan. Periksa ruang penyimpanan lalu coba lagi.");
+      setError(saveError.response?.data?.error?.message || "Perubahan alamat belum tersimpan.");
     }
   }
 
-  function handleDeleteAddress() {
+  async function handleDeleteAddress() {
     try {
-      deleteAddress(addressIndex);
+      await deleteAddress(editingAddress.id);
       navigate("/profil/alamat", { replace: true });
     } catch (deleteError) {
-      console.error("Gagal menghapus alamat pengiriman:", deleteError);
-      setError("Alamat belum berhasil dihapus. Silakan coba lagi.");
+      setError(deleteError.response?.data?.error?.message || "Alamat belum berhasil dihapus.");
       setShowDeleteConfirmation(false);
     }
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    const address = {
-      label: `${type} ${recipient.split(" ")[0]}`,
-      primary,
-      contact: `${recipient} (${phone})`,
-      address: `${street}, ${city}`,
-      note: note.trim() ? `Titik GPS Sesuai • ${note.trim()}` : "Titik GPS Sesuai",
-    };
-
+    if (latitude == null || longitude == null) {
+      setError("Ambil lokasi GPS alamat sebelum menyimpan.");
+      return;
+    }
     try {
-      saveAddress(address);
+      await saveAddress({
+        label: `${type} ${recipient.split(" ")[0]}`,
+        recipient_name: recipient.trim(),
+        phone: phone.trim(),
+        address: `${street.trim()}, ${city}`,
+        address_notes: note.trim(),
+        latitude,
+        longitude,
+        is_default: primary,
+      });
       navigate("/profil/alamat");
     } catch (saveError) {
-      console.error("Gagal menyimpan alamat pengiriman:", saveError);
-      setError("Alamat belum tersimpan. Periksa ruang penyimpanan browser lalu coba lagi.");
+      setError(saveError.response?.data?.error?.message || "Alamat belum tersimpan.");
     }
+  }
+
+  function captureLocation() {
+    if (!navigator.geolocation) {
+      setError("Browser tidak mendukung lokasi GPS.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => { setLatitude(coords.latitude); setLongitude(coords.longitude); setError(""); },
+      () => setError("Lokasi GPS tidak dapat diambil. Izinkan akses lokasi browser."),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   }
 
   if (isEditing) {
@@ -93,6 +120,7 @@ export default function TambahAlamat() {
               <div>
                 <strong>Lokasi Alamat</strong>
                 <small>Perbarui detail alamat pengiriman Anda</small>
+                <button type="button" onClick={captureLocation}>Perbarui Lokasi GPS ›</button>
               </div>
             </div>
           </section>
@@ -198,7 +226,7 @@ export default function TambahAlamat() {
               <strong>Pemetaan Lokasi Akurat</strong>
               <small>Sesuai titik GPS rumah Anda</small>
             </div>
-            <button type="button">Ubah di Peta ›</button>
+            <button type="button" onClick={captureLocation}>Ambil Lokasi GPS ›</button>
           </div>
         </section>
 
