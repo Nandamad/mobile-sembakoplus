@@ -9,11 +9,13 @@ export default function LupaPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+    setNotice("");
 
     if (!email.trim()) {
       setError("Masukkan alamat email terlebih dulu.");
@@ -22,13 +24,12 @@ export default function LupaPassword() {
 
     setLoading(true);
     try {
-      await api.get("/sanctum/csrf-cookie");
-      await api.post("/forgot-password", { email });
-      // kirim email ke halaman OTP lewat state router
-      navigate("/verifikasi-otp", { state: { email } });
+      const response = await api.post("/auth/forgot-password", { email });
+      setNotice(response.data?.message || "Jika email terdaftar, tautan reset akan dikirim.");
+      setEmail("");
     } catch (err) {
       setError(
-        err.response?.data?.message || "Gagal mengirim kode. Coba lagi."
+        err.response?.data?.message || "Gagal mengirim tautan reset. Periksa konfigurasi email atau coba lagi."
       );
     } finally {
       setLoading(false);
@@ -58,7 +59,7 @@ export default function LupaPassword() {
 
       <h1 className="forgot__title">Lupa Kata Sandi?</h1>
       <p className="forgot__subtitle">
-        Masukkan alamat email yang terdaftar untuk menerima kode verifikasi OTP.
+        Masukkan email terdaftar. Kami akan mengirim tautan aman untuk mengatur ulang kata sandi.
       </p>
 
       <form onSubmit={handleSubmit} noValidate>
@@ -74,6 +75,7 @@ export default function LupaPassword() {
         </div>
 
         {error && <p className="login__error" role="alert">{error}</p>}
+        {notice && <p className="login__notice" role="status">{notice}</p>}
 
         <button type="submit" className="login__submit" disabled={loading}>
           {loading ? "Mengirim..." : "Kirim Kode OTP"}

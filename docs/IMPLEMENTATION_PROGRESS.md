@@ -1,11 +1,11 @@
 # IMPLEMENTATION PROGRESS — SEMBAKOPLUS CUSTOMER FRONTEND & DRIVER PWA
 
 ## Tujuan dan batas
-Frontend pelanggan & kurir React/Vite: `d:\tempat magang\sembakopelus\mobile-sembakoplus`.
-Backend Laravel API: `d:\tempat magang\sembakopelus\sembakoplus`.
+Frontend pelanggan & kurir React/Vite: `D:\projek magang\mobile-sembakoplus`.
+Backend Laravel API: `C:\laragon\www\sembakoplus`.
 Kontrak utama: API `/api/v1`, Bearer token (`sembakoplus.auth.token`).
 
-Status di bawah diperbarui pada **26 November 2026** berdasarkan implementasi kode terbaru, pembersihan data demo, `npm run lint`, `vite build`, full PHPUnit backend (111 passed), serta verifikasi database & smoke HTTP API ke MySQL `sembakoplus_v2`. Pengujian interaktif browser penuh pada environment HTTPS/live gateway dicatat terpisah bila belum dijalankan.
+Status diperbarui berdasarkan kode dan verifikasi lokal terbaru. `npm run lint` dan `vite build` lulus. PHPUnit saat ini terblokir karena driver SQLite PHP CLI tidak tersedia (`1 passed, 110 errors`), bukan 111 passed. Browser E2E, email SMTP, dan gateway QRIS nyata belum diverifikasi.
 
 ## Ringkasan
 

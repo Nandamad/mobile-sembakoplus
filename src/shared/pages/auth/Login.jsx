@@ -42,8 +42,7 @@ export default function Login() {
   }
 
   function handleGoogle() {
-    // Diarahkan ke Laravel Socialite
-    window.location.href = "http://localhost:8000/auth/google/redirect";
+    setError("Login Google belum dikonfigurasi. Gunakan email/nomor HP dan password.");
   }
 
   return (

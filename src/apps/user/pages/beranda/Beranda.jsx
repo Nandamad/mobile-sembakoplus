@@ -9,6 +9,41 @@ import { mapApiProduct } from "../../../../shared/utils/productMapper";
 import "./Beranda.css";
 
 const VISIBLE_CATEGORIES = 7; // sisanya muncul saat "Lainnya" ditekan
+const CATALOG_CACHE_KEY = "sembakoplus.catalog.cache.v1";
+const CATALOG_CACHE_TTL = 60 * 1000;
+
+function readCatalogCache() {
+  try {
+    const cached = JSON.parse(sessionStorage.getItem(CATALOG_CACHE_KEY) || "null");
+    if (!cached?.savedAt || Date.now() - cached.savedAt > CATALOG_CACHE_TTL) return null;
+    return cached.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCatalogCache(data) {
+  try {
+    sessionStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), data }));
+  } catch {
+    // Storage penuh/private mode: API tetap menjadi sumber data.
+  }
+}
+
+function normalizeCatalog(homeResponse, categoryResponse, productResponse) {
+  const home = homeResponse.data?.data ?? {};
+  const categories = categoryResponse.data?.data ?? [];
+  const products = productResponse.data?.data ?? [];
+  return {
+    banners: (home.banners ?? []).map((banner) => ({
+      ...banner,
+      image: banner.image_url ?? banner.image ?? "",
+      bg: banner.background_color ?? banner.bg ?? "#2e6b14",
+    })),
+    categories: categories.map((category) => ({ ...category, icon: category.icon ?? "🛒" })),
+    products: products.map(mapApiProduct),
+  };
+}
 
 function getFlashSaleProducts(products) {
   return products.flatMap((product) => {
@@ -149,7 +184,7 @@ function Categories({ items, active, onPick }) {
 
 export default function Beranda() {
   const navigate = useNavigate();
-  const [data, setData] = useState({ banners: [], categories: [], products: [] });
+  const [data, setData] = useState(() => readCatalogCache() ?? { banners: [], categories: [], products: [] });
   const [active, setActive] = useState(null); // id kategori terpilih
   const [query, setQuery] = useState("");
   const [cart, setCart] = useState(getCartCount);
@@ -158,7 +193,9 @@ export default function Beranda() {
 
   async function handleAddProduct(product, variant) {
     try {
-      await addCartItem(product, variant);
+      const addPromise = addCartItem(product, variant);
+      setActionMessage(`${product.name} ditambahkan ke keranjang.`);
+      await addPromise;
       setActionMessage(`${product.name} masuk keranjang.`);
     } catch (error) {
       setActionMessage(error.response?.data?.error?.message || error.message || "Produk gagal dimasukkan ke keranjang.");
@@ -180,21 +217,9 @@ export default function Beranda() {
     Promise.all([api.get("/home"), api.get("/categories"), api.get("/products")])
       .then(([homeResponse, categoryResponse, productResponse]) => {
         if (!activeRequest) return;
-        const home = homeResponse.data?.data ?? {};
-        const categories = categoryResponse.data?.data ?? [];
-        const products = productResponse.data?.data ?? [];
-        setData({
-          banners: (home.banners ?? []).map((banner) => ({
-            ...banner,
-            image: banner.image_url ?? banner.image ?? "",
-            bg: banner.background_color ?? banner.bg ?? "#2e6b14",
-          })),
-          categories: categories.map((category) => ({
-            ...category,
-            icon: category.icon ?? "🛒",
-          })),
-          products: products.map(mapApiProduct),
-        });
+        const catalog = normalizeCatalog(homeResponse, categoryResponse, productResponse);
+        writeCatalogCache(catalog);
+        setData(catalog);
       })
       .catch((error) => {
         console.error("Gagal memuat katalog SembakoPlus API", error);

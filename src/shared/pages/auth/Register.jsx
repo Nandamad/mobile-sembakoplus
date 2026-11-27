@@ -54,7 +54,7 @@ export default function Register() {
   }
 
   function handleGoogle() {
-    window.location.href = "http://localhost:8000/auth/google/redirect";
+    setError("Pendaftaran Google belum dikonfigurasi. Gunakan formulir pendaftaran.");
   }
 
   return (

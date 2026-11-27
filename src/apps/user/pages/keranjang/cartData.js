@@ -49,11 +49,54 @@ export async function addCartItem(product, variant = product, quantity = 1) {
   }
   const productVariantId = variant?.id;
   if (!productVariantId) throw new Error("Varian produk tidak memiliki ID backend.");
-  await api.post("/cart/items", {
-    product_variant_id: productVariantId,
-    quantity: Math.max(1, Math.floor(Number(quantity) || 1)),
-  });
-  return loadCart();
+
+  const amount = Math.max(1, Math.floor(Number(quantity) || 1));
+  const snapshot = cartItems.map((item) => ({ ...item }));
+  const existing = cartItems.find((item) => Number(item.productVariantId) === Number(productVariantId));
+  if (existing) {
+    cartItems = cartItems.map((item) => item.id === existing.id ? { ...item, quantity: item.quantity + amount } : item);
+  } else {
+    cartItems = [...cartItems, {
+      id: `pending-${productVariantId}`,
+      productVariantId,
+      productId: product.id,
+      name: product.name,
+      unit: variant.name ?? variant.label ?? product.unit ?? "",
+      price: Number(variant.price ?? product.price ?? 0),
+      originalPrice: Number(variant.original_price ?? variant.price ?? product.price ?? 0),
+      image: product.image_url ?? product.image ?? "",
+      icon: "🛒",
+      quantity: amount,
+      selected: true,
+      stockAvailable: Number(variant.stock ?? 0),
+      isAvailable: true,
+    }];
+  }
+  window.dispatchEvent(new Event(CART_UPDATED_EVENT));
+
+  try {
+    const response = await api.post("/cart/items", {
+      product_variant_id: productVariantId,
+      quantity: amount,
+    });
+    const serverItem = response.data?.data;
+    if (serverItem?.id != null) {
+      const confirmed = mapItem(serverItem);
+      cartItems = cartItems.filter((item) =>
+        Number(item.productVariantId) !== Number(productVariantId) && item.id !== `pending-${productVariantId}`
+      );
+      cartItems.push(confirmed);
+      cartLoaded = true;
+      window.dispatchEvent(new Event(CART_UPDATED_EVENT));
+    } else {
+      await loadCart();
+    }
+    return cartItems;
+  } catch (error) {
+    cartItems = snapshot;
+    window.dispatchEvent(new Event(CART_UPDATED_EVENT));
+    throw error;
+  }
 }
 
 export async function changeCartQuantity(id, amount) {

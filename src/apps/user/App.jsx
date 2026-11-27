@@ -3,7 +3,7 @@ import Splash from "./pages/Splash";
 import Login from "../../shared/pages/auth/Login";
 import Register from "../../shared/pages/auth/Register";
 import LupaPassword from "../../shared/pages/auth/LupaPassword";
-import VerifyOtp from "../../shared/pages/auth/VerifyOtp";
+import ResetPassword from "../../shared/pages/auth/ResetPassword";
 import Beranda from "./pages/beranda/Beranda";
 import ProductDetail from "./pages/produk/ProductDetail";
 import ProductReviews from "./pages/produk/ProductReviews";
@@ -40,7 +40,8 @@ function App() {
         <Route path="/masuk" element={<Login />} />
         <Route path="/daftar" element={<Register />} />
         <Route path="/lupa-password" element={<LupaPassword />} />
-        <Route path="/verifikasi-otp" element={<VerifyOtp />} />
+
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/beranda" element={<Beranda />} />
         <Route path="/produk/:id/ulasan" element={<ProductReviews />} />
         <Route path="/produk/:id" element={<ProductDetail />} />
