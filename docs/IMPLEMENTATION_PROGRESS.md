@@ -45,6 +45,40 @@ Seluruh modul Customer Frontend dan Driver PWA dari rancangan v2.4 **telah terin
    - Uji transaksi QRIS nyata & callback dari server Midtrans membutuhkan `MIDTRANS_SERVER_KEY` / `MIDTRANS_CLIENT_KEY` sandbox/live di `.env` backend dan endpoint webhook publik.
    - Uji GPS (`TambahAlamat.jsx`) dan unggah foto bukti kurir (`Antaran.jsx`) melalui perangkat fisik/browser nyata memerlukan origin `https://` atau `http://localhost`.
 
+## Handoff Gap — Jangan Keluar dari Rancangan v2.4
+
+Dokumen sumber dan daftar gap terperinci: `C:\\laragon\\www\\sembakoplus\\docs\\IMPLEMENTATION_PROGRESS.md`, bagian **HANDOFF GAP AKTUAL**. Baca sebelum melanjutkan frontend atau menambah kontrak API.
+
+### Belum lengkap / belum terintegrasi
+
+- Google Login/Register: backend `/auth/google` tersedia; frontend belum menjalankan Google Identity Services dan belum mengirim ID token.
+- Reset password: endpoint backend ada, tetapi email/SMTP/queue dan token end-to-end belum diverifikasi; selaraskan UI yang masih memakai route lama.
+- Alamat: CRUD dan GPS ada, tetapi peta Leaflet/OpenStreetMap, marker yang dapat dikoreksi, dan geocoding belum ada. Pilihan kota saat ini statis.
+- QRIS: frontend memakai API; sandbox Midtrans/webhook publik belum diuji nyata.
+- Push notification: notifikasi in-app tersambung; FCM, lifecycle device token dan broadcast belum lengkap.
+- Driver camera/GPS HTTPS: perlu uji browser/perangkat nyata.
+- Browser E2E seluruh alur customer/driver belum selesai.
+
+### Batas desain wajib
+
+- Jangan jadikan frontend sumber harga, stok, total, ongkir, voucher, koin, atau payment status.
+- Peta mengikuti rancangan: Leaflet + OpenStreetMap + provider geocoding yang disetujui + OSRM self-hosted. Jangan menggantinya dengan Google Maps API berbayar.
+- Tidak ada courier GPS real-time; customer melihat timeline status saja.
+- Foto bukti pengantaran tidak boleh dibuka customer.
+- Jangan mengaktifkan refund, PPN, settlement internal, atau master wilayah tanpa keputusan bisnis dan kontrak API.
+- Jangan menampilkan fitur Google/QRIS/email seolah tersedia jika environment belum dikonfigurasi.
+- Lint/build bukan bukti browser E2E atau transaksi production.
+
+### Urutan penerus
+
+1. Sinkronkan dokumen auth/reset-password dengan route aktif.
+2. Selesaikan Google OAuth frontend dan uji token valid/invalid.
+3. Buktikan email reset melalui SMTP/queue staging.
+4. Implementasikan peta alamat/geocoding setelah provider disetujui.
+5. Uji Midtrans sandbox + webhook idempotent.
+6. Selesaikan push/device token dan HTTPS browser tests.
+7. Jalankan E2E browser customer/driver, lalu update progres dengan bukti aktual.
+
 ## Kriteria selesai fitur
 
 - Endpoint dan payload sesuai FormRequest/resource Laravel. ✅

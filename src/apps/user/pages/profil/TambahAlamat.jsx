@@ -14,7 +14,7 @@ export default function TambahAlamat() {
   const [type, setType] = useState("Rumah");
   const [recipient, setRecipient] = useState("");
   const [phone, setPhone] = useState("");
-  const [city, setCity] = useState("Cilacap Selatan, Sidakaya (53211)");
+  const [city, setCity] = useState("");
   const [street, setStreet] = useState("");
   const [note, setNote] = useState("");
   const [primary, setPrimary] = useState(false);
@@ -69,6 +69,10 @@ export default function TambahAlamat() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (!city) {
+      setError("Pilih kota atau kecamatan alamat.");
+      return;
+    }
     if (latitude == null || longitude == null) {
       setError("Ambil lokasi GPS alamat sebelum menyimpan.");
       return;
@@ -273,6 +277,7 @@ export default function TambahAlamat() {
             value={city}
             onChange={(event) => setCity(event.target.value)}
           >
+            <option value="">Pilih kota / kecamatan / kode pos</option>
             <option>Cilacap Selatan, Sidakaya (53211)</option>
             <option>Cilacap Tengah, Sidanegara (53223)</option>
             <option>Cilacap Utara, Gumilir (53231)</option>
